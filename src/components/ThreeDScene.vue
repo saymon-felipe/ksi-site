@@ -94,7 +94,33 @@ export default {
     initThree() {
       // 1. CENA
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xF8F8F8);
+      const topColor = new THREE.Color(0xC7D9E6); // Cor superior (light blue)
+      const bottomColor = new THREE.Color(0xFFFFFF); // Cor inferior (white)
+
+      const createPixelCanvas = (color) => {
+        const size = 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const context = canvas.getContext('2d');
+        context.fillStyle = color.getStyle();
+        context.fillRect(0, 0, size, size);
+        return canvas;
+      };
+
+      // Para um degradê top-down, a face 'top' (y+) será a cor inicial, e a face 'bottom' (y-) será a cor final.
+      // As outras faces (x+, x-, z+, z-) podem ser uma mistura ou uma das cores extremas.
+      const cubeTextures = [
+        createPixelCanvas(topColor),    // Pos X (right) - pode ser ajustada para um degradê lateral, mas para top-down, uma cor neutra funciona
+        createPixelCanvas(bottomColor), // Neg X (left) - pode ser ajustada
+        createPixelCanvas(topColor),    // Pos Y (top) - Cor inicial do degradê
+        createPixelCanvas(bottomColor), // Neg Y (bottom) - Cor final do degradê
+        createPixelCanvas(topColor),    // Pos Z (front) - pode ser ajustada
+        createPixelCanvas(bottomColor)  // Neg Z (back) - pode ser ajustada
+      ];
+
+      scene.background = new THREE.CubeTexture(cubeTextures);
+      scene.background.needsUpdate = true;
       scene.fog = new THREE.Fog(0xF8F8F8, 5, 20);
 
       // 2. CÂMERA
@@ -102,8 +128,10 @@ export default {
       camera.position.set(0, 0, 5);
 
       // 3. RENDERIZADOR
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+
+      const container = this.$refs.container;
+      renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.2;
@@ -116,8 +144,8 @@ export default {
       
       mousePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
 
-      this.createEnvironmentMap();
-      energyTexture = this.createEnergyTexture();
+      //this.createEnvironmentMap();
+      //energyTexture = this.createEnergyTexture();
 
       // 4. LUZES
       const ambientLight = new THREE.AmbientLight(0x4040ff, 1);
@@ -131,7 +159,7 @@ export default {
 
       // 5. OBJETOS
       this.createSceneObjects();
-      this.createEnergyLines(); // NOVO: Chama a função que cria as partículas
+      //this.createEnergyLines(); // NOVO: Chama a função que cria as partículas
       
       this.updateSphereResponsiveness();
 
@@ -216,10 +244,10 @@ export default {
 
         if (screenWidth < 768) {
             deformableSphere.visible = false;
-            if(energyLines) energyLines.visible = false; // NOVO: Esconde as partículas também
+            //if(energyLines) energyLines.visible = false; // NOVO: Esconde as partículas também
         } else {
             deformableSphere.visible = true;
-            if(energyLines) energyLines.visible = true; // NOVO: Mostra as partículas
+            //if(energyLines) energyLines.visible = true; // NOVO: Mostra as partículas
             
             const scale = Math.max(0.55, Math.min(1.0, screenWidth / 1400));
             deformableSphere.scale.set(scale, scale, scale);
@@ -267,13 +295,14 @@ export default {
       const cubeTexture = new THREE.CubeTexture( [ new THREE.Color(0x101030), new THREE.Color(0x101030), new THREE.Color(0x303050), new THREE.Color(0x050510), new THREE.Color(0x101030), new THREE.Color(0x101030) ].map(color => { const size = 1; const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size; const context = canvas.getContext('2d'); context.fillStyle = color.getStyle(); context.fillRect(0, 0, size, size); return canvas; }) );
       cubeTexture.needsUpdate = true;
       environmentMap = cubeTexture;
-      scene.environment = environmentMap;
     },
     onWindowResize() {
       if (camera && renderer) {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const container = this.$refs.container;
+        renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         this.updateSphereResponsiveness();
       }
@@ -413,9 +442,9 @@ export default {
             positions[i3 + 2] += pData.velocity.z * speed;
         }
         
-        energyLines.geometry.attributes.position.needsUpdate = true;
-        energyLines.geometry.attributes.color.needsUpdate = true;
-        energyLines.geometry.attributes.size.needsUpdate = true;
+        //energyLines.geometry.attributes.position.needsUpdate = true;
+        //energyLines.geometry.attributes.color.needsUpdate = true;
+       // energyLines.geometry.attributes.size.needsUpdate = true;
       }
 
       if (scene && camera && renderer) {
@@ -423,6 +452,37 @@ export default {
       }
     },
     createSceneObjects() {
+      const container = this.$refs.container;
+      const planeGeometry = new THREE.PlaneGeometry(container.clientWidth, container.clientHeight); // Um plano bem grande
+      const gradientMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+              color1: { value: new THREE.Color(0xC7D9E6) }, // Cor superior
+              color2: { value: new THREE.Color(0xFFFFFF) }  // Cor inferior
+          },
+          vertexShader: `
+              varying vec2 vUv;
+              void main() {
+                  vUv = uv; // uv.y vai de 0 a 1 verticalmente
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+          `,
+          fragmentShader: `
+              uniform vec3 color1;
+              uniform vec3 color2;
+              varying vec2 vUv;
+              void main() {
+                  // Interpolação linear entre color1 e color2 baseada na coordenada Y (vUv.y)
+                  gl_FragColor = vec4(mix(color2, color1, vUv.y), 1.0);
+              }
+          `,
+          depthWrite: false // Garante que não interfira com outros objetos
+      });
+
+      const gradientPlane = new THREE.Mesh(planeGeometry, gradientMaterial);
+      // Posicione o plano bem atrás da câmera para que ele atue como um fundo
+      gradientPlane.position.z = -50;
+      scene.add(gradientPlane);
+
       const sphereGeometry = new THREE.SphereGeometry(1.5, 128, 128);
       originalPositions = Array.from(sphereGeometry.attributes.position.array);
       originalNormals = Array.from(sphereGeometry.attributes.normal.array);
@@ -434,13 +494,14 @@ export default {
         envMap: environmentMap,
         envMapIntensity: 1.0,
         emissive: 0x00008b,
-        emissiveMap: energyTexture,
+        //emissiveMap: energyTexture,
         emissiveIntensity: 1.2,
       });
       deformableSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      deformableSphere.position.y = -0.6;
       scene.add(deformableSphere);
 
-      const planeGeometry = new THREE.PlaneGeometry(60, 60); 
+      /*const planeGeometry = new THREE.PlaneGeometry(60, 60); 
       const planeMaterial = new THREE.MeshStandardMaterial({
         color: 0xF8F8F8, 
         roughness: 0, 
@@ -450,7 +511,7 @@ export default {
       plane.rotation.x = -Math.PI / 2;
       plane.position.y = -2;
       plane.receiveShadow = false; 
-      scene.add(plane);
+      scene.add(plane);*/
     },
   },
 };
@@ -458,13 +519,22 @@ export default {
 
 <style scoped>
 .three-scene {
-  position: fixed;
+  width: 96vw;
+  height: 96vh;
+  position: absolute;
+  touch-action: none;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
+  right: 0;
+  bottom: 0;
+  border-radius: 2rem;
   overflow: hidden;
-  background-color: #050810;
+  margin: auto;
+  background-image: linear-gradient(to bottom, #C7D9E6, #ffffff);
+}
+
+.three-scene canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>

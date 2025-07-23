@@ -1,12 +1,14 @@
 <template>
-  <headerComponent></headerComponent>
-  <section class="hero-container">
-    <div class="glass">
-      <img src="./assets/img/logo.png" class="logo" alt="KSI - Kinetic Solutions">
-    </div>
-    <img src="./assets/img/caret.svg" class="float caret">
-  </section>
-  <ThreeDScene />
+  <main class="app-box">
+    <!--<headerComponent></headerComponent>-->
+    <section class="hero-container">
+      <div class="glass">
+        <img src="./assets/img/logo.png" class="logo" alt="KSI - Kinetic Solutions">
+      </div>
+      <img src="./assets/img/caret.svg" class="float caret">
+    </section>
+    <ThreeDScene />
+  </main>
 </template>
 
 <script>
@@ -105,4 +107,19 @@ export default {
   }
 
 
+</style>
+<style>
+.app-box {
+  width: 96vw;
+  height: 96vh;
+  overflow-y: auto;
+  border-radius: 2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  background-image: linear-gradient(to bottom, #C7D9E6, #ffffff);
+}
 </style>
