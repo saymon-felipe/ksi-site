@@ -27,6 +27,7 @@
 }
 
 body {
+  background-image: linear-gradient(to bottom, #dde8f0, #ffffff) !important;
   min-height: 100vh;
   color: var(--color-text);
   background: var(--white);

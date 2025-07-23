@@ -6,7 +6,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-// --- Funções de Simplex Noise (Existente, sem alterações) ---
+// --- Funções de Simplex Noise ---
+// Mantidas como estão, pois são utilitárias e funcionais.
 const p = [151,160,137,91,149,16,161,190,137,178,160,93,24,147,236,95,147,208,255,165,80,112,18,2,242,10,137,164,191,152,14,147,142,43,172,216,170,178,81,173,150,150,111,102,96,252,128,182,76,254,167,11,172,130,22,236,172,74,213,25,12,137,90,121,161,230,107,43,92,106,66,110,95,120,70,147,219,8,135,142,27,24,99,237,192,207,173,191,114,248,154,77,203,195,14,194,76,175,191,115,108,62,203,63,60,150,147,159,18,230,230,215,229,191,185,155,20,248,126,143,150,8,255,255,89,173,200,68,141,177,150,210,173,184,142,209,147,151,177,12,230,190,150,207,81,161,255,255,255,190,218,172,168,164,151,154,142,91,95,207,165,155,170,75,76,80,10,147,236,255,147,194,208,255,165,80,112,18,2,242,10,137,164,191,152,14,147,142,43,172,216,170,178,81,173,150,150,111,102,96,252,128,182,76,254,167,11,172,130,22,236,172,74,213,25,12,137,90,121,161,230,107,43,92,106,66,110,95,120,70,147,219,8,135,142,27,24,99,237,192,207,173,191,114,248,154,77,203,195,14,194,76,175,191,115,108,62,203,63,60,150,147,159,18,230,230,215,229,191,185,155,20,248,126,143,150,8,255,255,89,173,200,68,141,177,150,210,173,184,142,209,147,151,177,12,230,190,150,207,81,161,255,255,255];
 const grad3 = [[1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0], [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1], [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1]];
 const perm = new Uint8Array(512);
@@ -19,6 +20,9 @@ function scale(n) { return (1 + n) / 2; }
 
 // --- Fim das Funções de Simplex Noise ---
 
+// Variáveis globais para a cena Three.js
+// É uma boa prática declará-las fora do componente se forem acessadas por vários métodos
+// e se elas persistirem o ciclo de vida do componente.
 let scene = null;
 let camera = null;
 let renderer = null;
@@ -30,12 +34,12 @@ let raycaster = new THREE.Raycaster();
 let mousePlane = null;
 let mouseTarget = new THREE.Vector3();
 
+// Dados da esfera deformável
 let originalPositions = [];
 let originalNormals = [];
 let currentVertexPositions = [];
-let environmentMap = null;
-let energyTexture = null;
 
+// Variáveis para as partículas (energyLines)
 let energyLines = null;
 let particlesData = [];
 const particleCount = 2500;
@@ -46,31 +50,42 @@ export default {
   name: 'ThreeDScene',
   data() {
     return {
-      time: 0,
+      time: 0, // Usado para animação baseada em tempo
     };
   },
   mounted() {
+    // Inicializa a cena Three.js quando o componente é montado no DOM
     this.initThree();
+    // Adiciona event listeners para redimensionamento da janela e movimento do mouse
     window.addEventListener('resize', this.onWindowResize, false);
     window.addEventListener('mousemove', this.onMouseMove, false);
   },
   beforeUnmount() {
+    // Limpeza de event listeners e recursos Three.js antes que o componente seja destruído
     window.removeEventListener('resize', this.onWindowResize, false);
     window.removeEventListener('mousemove', this.onMouseMove, false);
+
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
     }
     if (renderer) {
-      renderer.dispose();
+      renderer.dispose(); // Libera a memória da GPU
+      this.$refs.container.removeChild(renderer.domElement); // Remove o canvas do DOM
       renderer = null;
     }
-    // --- NOVO: Limpeza dos recursos das partículas ---
-    if (energyLines) {
-        if (energyLines.geometry) energyLines.geometry.dispose();
-        if (energyLines.material) energyLines.material.dispose();
-    }
-    // --- Fim da limpeza ---
     if (scene) {
+      scene.traverse((object) => { // Dispose de geometrias e materiais de todos os objetos na cena
+        if (object.isMesh) {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        }
+      });
       scene.clear();
       scene = null;
     }
@@ -78,382 +93,91 @@ export default {
       controls.dispose();
       controls = null;
     }
-    if (energyTexture) {
-      energyTexture.dispose();
-      energyTexture = null;
-    }
+    // Limpeza de variáveis globais para evitar vazamento de memória
     deformableSphere = null;
     camera = null;
     originalPositions = [];
     originalNormals = [];
     currentVertexPositions = [];
-    environmentMap = null;
-    energyLines = null; // NOVO
+    // environmentMap e energyTexture não estavam sendo criados ou usados, então não precisam de limpeza específica aqui,
+    // mas se forem adicionados, suas disposições seriam necessárias.
+    // energyLines foi adicionado para limpeza no beforeUnmount, o que é bom.
+    if (energyLines) {
+      if (energyLines.geometry) energyLines.geometry.dispose();
+      if (energyLines.material) energyLines.material.dispose();
+      energyLines = null;
+    }
   },
   methods: {
+    /**
+     * @method initThree
+     * @description Inicializa a cena Three.js, câmera, renderer, controles e objetos.
+     */
     initThree() {
       // 1. CENA
       scene = new THREE.Scene();
-      const topColor = new THREE.Color(0xC7D9E6); // Cor superior (light blue)
-      const bottomColor = new THREE.Color(0xFFFFFF); // Cor inferior (white)
+      // A névoa ajuda a "esconder" o fim do fundo e dar profundidade.
+      //scene.fog = new THREE.Fog(0xF8F8F8, 5, 20);
+      scene.background = null;
+      //scene.background = new THREE.Color(0xff0000);
 
-      const createPixelCanvas = (color) => {
-        const size = 1;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const context = canvas.getContext('2d');
-        context.fillStyle = color.getStyle();
-        context.fillRect(0, 0, size, size);
-        return canvas;
-      };
-
-      // Para um degradê top-down, a face 'top' (y+) será a cor inicial, e a face 'bottom' (y-) será a cor final.
-      // As outras faces (x+, x-, z+, z-) podem ser uma mistura ou uma das cores extremas.
-      const cubeTextures = [
-        createPixelCanvas(topColor),    // Pos X (right) - pode ser ajustada para um degradê lateral, mas para top-down, uma cor neutra funciona
-        createPixelCanvas(bottomColor), // Neg X (left) - pode ser ajustada
-        createPixelCanvas(topColor),    // Pos Y (top) - Cor inicial do degradê
-        createPixelCanvas(bottomColor), // Neg Y (bottom) - Cor final do degradê
-        createPixelCanvas(topColor),    // Pos Z (front) - pode ser ajustada
-        createPixelCanvas(bottomColor)  // Neg Z (back) - pode ser ajustada
-      ];
-
-      scene.background = new THREE.CubeTexture(cubeTextures);
-      scene.background.needsUpdate = true;
-      scene.fog = new THREE.Fog(0xF8F8F8, 5, 20);
+      // Define o gradiente de fundo da cena
+      this.setupSceneBackground();
 
       // 2. CÂMERA
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 0, 5);
+      // Câmera de perspectiva para uma visão 3D realista.
+      camera = new THREE.PerspectiveCamera(
+        60,
+        this.$refs.container.clientWidth / this.$refs.container.clientHeight, // Proporção baseada no container
+        0.1,
+        1000
+      );
+      camera.position.set(0, 0, 5); // Posição inicial da câmera
 
       // 3. RENDERIZADOR
+      // Renderer WebGL para renderizar a cena no canvas.
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-
+      // Define o tamanho do renderer para preencher o contêiner.
       const container = this.$refs.container;
       renderer.setSize(container.clientWidth, container.clientHeight);
+      // Ajusta o pixel ratio para alta densidade de pixels (telas Retina).
       renderer.setPixelRatio(window.devicePixelRatio);
+      // Configurações de tone mapping para melhor aparência das luzes e cores.
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.2;
+      // Anexa o elemento canvas do renderer ao contêiner Vue.
       this.$refs.container.appendChild(renderer.domElement);
 
+      // Controles de órbita (desabilitados para rotação automática)
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableZoom = false;
       controls.enablePan = false;
-      controls.enableRotate = false;
+      controls.enableRotate = false; // Rotação desabilitada para interatividade customizada
       
+      // Plano para calcular a interseção do mouse no espaço 3D
       mousePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
 
-      //this.createEnvironmentMap();
-      //energyTexture = this.createEnergyTexture();
-
       // 4. LUZES
-      const ambientLight = new THREE.AmbientLight(0x4040ff, 1);
-      scene.add(ambientLight);
-      const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-      keyLight.position.set(-5, 5, 5);
-      scene.add(keyLight);
-      const fillLight = new THREE.DirectionalLight(0x00ffff, 0.7);
-      fillLight.position.set(5, -5, 2);
-      scene.add(fillLight);
+      this.setupLights();
 
-      // 5. OBJETOS
+      // 5. OBJETOS DA CENA
       this.createSceneObjects();
-      //this.createEnergyLines(); // NOVO: Chama a função que cria as partículas
       
+      // Ajusta a escala da esfera com base na largura da tela
       this.updateSphereResponsiveness();
 
       // 6. ANIMAÇÃO
       this.animate();
     },
 
-    createEnergyLines() {
-        const pGeometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 4); // r, g, b, a
-        const sizes = new Float32Array(particleCount);
-
-        const maxLife = 300; // Tempo de vida máximo de uma partícula
-
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            const i4 = i * 4;
-            
-            const pos = new THREE.Vector3( (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5) ).normalize().multiplyScalar(2 + Math.random() * 3);
-            positions[i3] = pos.x;
-            positions[i3 + 1] = pos.y;
-            positions[i3 + 2] = pos.z;
-
-            colors[i4] = colorDeepBlue.r;
-            colors[i4 + 1] = colorDeepBlue.g;
-            colors[i4 + 2] = colorDeepBlue.b;
-            colors[i4 + 3] = 0; // Alpha inicial 0
-
-            sizes[i] = Math.random() * 0.1 + 0.05;
-
-            particlesData.push({
-                velocity: new THREE.Vector3(),
-                life: Math.random() * maxLife,
-                maxLife: maxLife + Math.random() * 100,
-                color: new THREE.Color(),
-                timeOffset: Math.random() * 100, // Deslocamento para animação de cor/tamanho
-                baseSize: Math.random() * 0.08 + 0.02,
-            });
-        }
-
-        pGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        pGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 4));
-        pGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        
-        const vertexShader = `
-            attribute float size;
-            attribute vec4 color;
-            varying vec4 vColor;
-            void main() {
-                vColor = color;
-                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                gl_PointSize = size * (300.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `;
-        const fragmentShader = `
-            varying vec4 vColor;
-            void main() {
-                float d = distance(gl_PointCoord, vec2(0.5, 0.5));
-                if (d > 0.5) discard;
-                gl_FragColor = vec4(vColor.rgb, vColor.a * (1.0 - d * 2.0));
-            }
-        `;
-
-        const pMaterial = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            blending: THREE.AdditiveBlending,
-            transparent: true,
-            depthWrite: false,
-        });
-        
-        energyLines = new THREE.Points(pGeometry, pMaterial);
-        scene.add(energyLines);
-    },
-    
-    updateSphereResponsiveness() {
-        if (!deformableSphere) return; 
-
-        const screenWidth = window.innerWidth;
-
-        if (screenWidth < 768) {
-            deformableSphere.visible = false;
-            //if(energyLines) energyLines.visible = false; // NOVO: Esconde as partículas também
-        } else {
-            deformableSphere.visible = true;
-            //if(energyLines) energyLines.visible = true; // NOVO: Mostra as partículas
-            
-            const scale = Math.max(0.55, Math.min(1.0, screenWidth / 1400));
-            deformableSphere.scale.set(scale, scale, scale);
-        }
-    },
-    createEnergyTexture() {
-        const size = 256;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const context = canvas.getContext('2d');
-        const imageData = context.getImageData(0, 0, size, size);
-        const data = imageData.data;
-        const noiseScale = 3.0; 
-
-        for (let y = 0; y < size; y++) {
-            for (let x = 0; x < size; x++) {
-                const u = x / size;
-                const v = y / size;
-                const theta = u * 2 * Math.PI;
-                const phi = v * Math.PI;
-                const px = Math.sin(phi) * Math.cos(theta);
-                const py = Math.cos(phi);
-                const pz = Math.sin(phi) * Math.sin(theta);
-                
-                const n = noise(
-                    px * noiseScale + this.time,
-                    py * noiseScale + this.time,
-                    pz * noiseScale + this.time
-                );
-                const brightness = Math.max(0, Math.min(255, scale(n) * 255));
-                const index = (x + y * size) * 4;
-                data[index] = brightness * 0.8;
-                data[index + 1] = brightness * 0.9;
-                data[index + 2] = 255;
-                data[index + 3] = 255;
-            }
-        }
-        context.putImageData(imageData, 0, 0);
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        return texture;
-    },
-    createEnvironmentMap() {
-      const cubeTexture = new THREE.CubeTexture( [ new THREE.Color(0x101030), new THREE.Color(0x101030), new THREE.Color(0x303050), new THREE.Color(0x050510), new THREE.Color(0x101030), new THREE.Color(0x101030) ].map(color => { const size = 1; const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size; const context = canvas.getContext('2d'); context.fillStyle = color.getStyle(); context.fillRect(0, 0, size, size); return canvas; }) );
-      cubeTexture.needsUpdate = true;
-      environmentMap = cubeTexture;
-    },
-    onWindowResize() {
-      if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-
-        const container = this.$refs.container;
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        this.updateSphereResponsiveness();
-      }
-    },
-    onMouseMove(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    },
-    animate() {
-      animationFrameId = requestAnimationFrame(this.animate);
-      this.time += 0.005;
-
-      // Animação da esfera... (código existente)
-      if (deformableSphere && mousePlane) {
-        raycaster.setFromCamera(mouse, camera);
-        raycaster.ray.intersectPlane(mousePlane, mouseTarget);
-        
-        const pointOfInfluence = mouseTarget;
-        deformableSphere.rotation.y += 0.001;
-        deformableSphere.rotation.x += 0.0005;
-
-        const positions = deformableSphere.geometry.attributes.position.array;
-        const vertexCount = originalPositions.length / 3;
-        const noiseScale = 0.8;
-        const noiseStrength = 0.15;
-        const mouseDeformStrength = 0.8;
-        const mouseDeformRadius = 2.5;
-        const lerpFactor = 0.08;
-
-        for (let i = 0; i < vertexCount; i++) {
-          const i3 = i * 3;
-          const originalX = originalPositions[i3];
-          const originalY = originalPositions[i3 + 1];
-          const originalZ = originalPositions[i3 + 2];
-          const currentX = currentVertexPositions[i3];
-          const currentY = currentVertexPositions[i3 + 1];
-          const currentZ = currentVertexPositions[i3 + 2];
-          const nX = originalX * noiseScale + this.time;
-          const nY = originalY * noiseScale + this.time;
-          const nZ = originalZ * noiseScale + this.time;
-          const noiseValue = noise(nX, nY, nZ);
-          const originalNormal = new THREE.Vector3(originalNormals[i3], originalNormals[i3+1], originalNormals[i3+2]);
-          let targetX = originalX + originalNormal.x * noiseValue * noiseStrength;
-          let targetY = originalY + originalNormal.y * noiseValue * noiseStrength;
-          let targetZ = originalZ + originalNormal.z * noiseValue * noiseStrength;
-          const vertexWorldPos = new THREE.Vector3(originalX, originalY, originalZ);
-          vertexWorldPos.applyMatrix4(deformableSphere.matrixWorld);
-          const distance = vertexWorldPos.distanceTo(pointOfInfluence);
-          if (distance < mouseDeformRadius) {
-            const strength = (1 - (distance / mouseDeformRadius));
-            const inwardDirection = new THREE.Vector3().subVectors(deformableSphere.position, vertexWorldPos).normalize();
-            targetX += inwardDirection.x * strength * mouseDeformStrength;
-            targetY += inwardDirection.y * strength * mouseDeformStrength;
-            targetZ += inwardDirection.z * strength * mouseDeformStrength;
-          }
-          positions[i3]     = lerp(lerpFactor, currentX, targetX);
-          positions[i3 + 1] = lerp(lerpFactor, currentY, targetY);
-          positions[i3 + 2] = lerp(lerpFactor, currentZ, targetZ);
-          currentVertexPositions[i3]     = positions[i3];
-          currentVertexPositions[i3 + 1] = positions[i3 + 1];
-          currentVertexPositions[i3 + 2] = positions[i3 + 2];
-        }
-        deformableSphere.geometry.attributes.position.needsUpdate = true;
-        deformableSphere.geometry.computeVertexNormals();
-      }
-
-      if (energyLines && energyLines.visible) {
-        const positions = energyLines.geometry.attributes.position.array;
-        const colors = energyLines.geometry.attributes.color.array;
-        const sizes = energyLines.geometry.attributes.size.array;
-
-        const noiseTime = this.time * 0.1;
-        const noiseFreq = 0.5;
-        const speed = 0.005;
-
-        // Parâmetros da interação com o mouse
-        const mouseRepelRadius = 1.5;
-        const mouseRepelStrength = 0.03;
-
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            const i4 = i * 4;
-            const pData = particlesData[i];
-            
-            pData.life -= 1;
-
-            if (pData.life <= 0) {
-                const newPos = new THREE.Vector3( (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5) ).normalize().multiplyScalar(1.8);
-                positions[i3] = newPos.x;
-                positions[i3 + 1] = newPos.y;
-                positions[i3 + 2] = newPos.z;
-                pData.life = pData.maxLife;
-                pData.velocity.set(0,0,0);
-            }
-
-            // 1. Lógica de Fade Suave (Alpha)
-            const lifeRatio = pData.life / pData.maxLife;
-            let alpha = 0;
-            if (lifeRatio > 0.75) {
-                alpha = (1.0 - lifeRatio) * 4.0; // Fade out
-            } else if (lifeRatio < 0.25) {
-                alpha = lifeRatio * 4.0; // Fade in
-            } else {
-                alpha = 1.0;
-            }
-            colors[i4 + 3] = alpha * 0.7; // Multiplica por um fator para não ficar excessivamente brilhante
-
-            // 2. Lógica de Cor e Glow Pulsante
-            const colorPulse = (Math.sin(this.time * 0.5 + pData.timeOffset) + 1) / 2; // Varia de 0 a 1
-            pData.color.lerpColors(colorDeepBlue, colorCyan, colorPulse);
-            colors[i4] = pData.color.r;
-            colors[i4 + 1] = pData.color.g;
-            colors[i4 + 2] = pData.color.b;
-            sizes[i] = pData.baseSize + colorPulse * 0.05;
-
-            // Lógica de Movimento (Vento)
-            const px = positions[i3], py = positions[i3 + 1], pz = positions[i3 + 2];
-            const nX = noise(px * noiseFreq, py * noiseFreq, pz * noiseFreq + noiseTime) * 1.5;
-            const nY = noise(py * noiseFreq, pz * noiseFreq, px * noiseFreq + noiseTime) * 1.5;
-            const nZ = noise(pz * noiseFreq, px * noiseFreq, py * noiseFreq + noiseTime) * 1.5;
-            pData.velocity.x = lerp(0.05, pData.velocity.x, nX);
-            pData.velocity.y = lerp(0.05, pData.velocity.y, nY);
-            pData.velocity.z = lerp(0.05, pData.velocity.z, nZ);
-
-            // 3. Lógica de Interação com o Mouse
-            const particlePos = new THREE.Vector3(px, py, pz);
-            const distanceToMouse = particlePos.distanceTo(mouseTarget);
-            if (distanceToMouse < mouseRepelRadius) {
-                const repelForce = new THREE.Vector3().subVectors(particlePos, mouseTarget).normalize();
-                const strength = (1 - distanceToMouse / mouseRepelRadius) * mouseRepelStrength;
-                pData.velocity.add(repelForce.multiplyScalar(strength));
-            }
-            
-            // Atualiza Posição
-            positions[i3] += pData.velocity.x * speed;
-            positions[i3 + 1] += pData.velocity.y * speed;
-            positions[i3 + 2] += pData.velocity.z * speed;
-        }
-        
-        //energyLines.geometry.attributes.position.needsUpdate = true;
-        //energyLines.geometry.attributes.color.needsUpdate = true;
-       // energyLines.geometry.attributes.size.needsUpdate = true;
-      }
-
-      if (scene && camera && renderer) {
-        renderer.render(scene, camera);
-      }
-    },
-    createSceneObjects() {
+    /**
+     * @method setupSceneBackground
+     * @description Cria e define uma textura de gradiente para o background da cena.
+     * Utiliza um Canvas 2D para gerar o gradiente vertical.
+     */
+    setupSceneBackground() {
       const container = this.$refs.container;
-      const planeGeometry = new THREE.PlaneGeometry(container.clientWidth, container.clientHeight); // Um plano bem grande
+      const planeGeometry = new THREE.PlaneGeometry(container.clientWidth, 120); // Um plano bem grande
       const gradientMaterial = new THREE.ShaderMaterial({
           uniforms: {
               color1: { value: new THREE.Color(0xC7D9E6) }, // Cor superior
@@ -479,48 +203,204 @@ export default {
       });
 
       const gradientPlane = new THREE.Mesh(planeGeometry, gradientMaterial);
-      // Posicione o plano bem atrás da câmera para que ele atue como um fundo
       gradientPlane.position.z = -50;
       scene.add(gradientPlane);
+    },
 
+    /**
+     * @method setupLights
+     * @description Configura as luzes na cena para iluminação da esfera.
+     */
+    setupLights() {
+      // Luz ambiente: ilumina todos os objetos igualmente, cor azulada para complementar o fundo.
+      const ambientLight = new THREE.AmbientLight(0x4040ff, 1);
+      scene.add(ambientLight);
+
+      // Luz direcional principal (Key Light): simula uma fonte de luz principal.
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+      keyLight.position.set(-5, 5, 5); // Posição para criar sombras e destaques interessantes
+      scene.add(keyLight);
+
+      // Luz direcional de preenchimento (Fill Light): suaviza as sombras e adiciona cor secundária.
+      const fillLight = new THREE.DirectionalLight(0x00ffff, 0.7);
+      fillLight.position.set(5, -5, 2); // Posição oposta à key light
+      scene.add(fillLight);
+    },
+    
+    /**
+     * @method updateSphereResponsiveness
+     * @description Ajusta a visibilidade e escala da esfera com base na largura da tela.
+     */
+    updateSphereResponsiveness() {
+      if (!deformableSphere) return; 
+
+      const screenWidth = window.innerWidth;
+
+      if (screenWidth < 768) {
+        deformableSphere.visible = false; // Esconde a esfera em telas pequenas
+        // if (energyLines) energyLines.visible = false; // Opcional: esconder partículas também
+      } else {
+        deformableSphere.visible = true; // Mostra a esfera em telas maiores
+        // if (energyLines) energyLines.visible = true; // Opcional: mostrar partículas
+        
+        // Escala a esfera proporcionalmente à largura da tela
+        const scale = Math.max(0.55, Math.min(1.0, screenWidth / 1400));
+        deformableSphere.scale.set(scale, scale, scale);
+      }
+    },
+
+    /**
+     * @method onWindowResize
+     * @description Lida com o evento de redimensionamento da janela.
+     * Atualiza a proporção da câmera e o tamanho do renderer.
+     */
+    onWindowResize() {
+      if (camera && renderer && this.$refs.container) {
+        const container = this.$refs.container;
+        camera.aspect = container.clientWidth / container.clientHeight; // Atualiza proporção da câmera com base no container
+        camera.updateProjectionMatrix(); // Atualiza a matriz de projeção da câmera
+
+        renderer.setSize(container.clientWidth, container.clientHeight); // Redimensiona o renderer
+        renderer.setPixelRatio(window.devicePixelRatio); // Reajusta pixel ratio
+        this.updateSphereResponsiveness(); // Reajusta a esfera
+      }
+    },
+
+    /**
+     * @method onMouseMove
+     * @description Lida com o movimento do mouse, atualizando as coordenadas 2D do mouse.
+     * @param {MouseEvent} event - O evento do mouse.
+     */
+    onMouseMove(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    },
+
+    /**
+     * @method animate
+     * @description Loop principal de animação da cena Three.js.
+     * Chamado recursivamente via requestAnimationFrame.
+     */
+    animate() {
+      animationFrameId = requestAnimationFrame(this.animate);
+      this.time += 0.005; // Incrementa o tempo para animações baseadas em tempo
+
+      // Animação da esfera deformável
+      if (deformableSphere && mousePlane) {
+        // Atualiza o raycaster com base na posição do mouse na tela
+        raycaster.setFromCamera(mouse, camera);
+        // Calcula a interseção do raio com o plano do mouse para obter um ponto 3D de influência
+        raycaster.ray.intersectPlane(mousePlane, mouseTarget);
+        
+        const pointOfInfluence = mouseTarget; // O ponto onde o mouse "toca" a cena
+        
+        // Rotação automática da esfera
+        deformableSphere.rotation.y += 0.001;
+        deformableSphere.rotation.x += 0.0005;
+
+        const positions = deformableSphere.geometry.attributes.position.array;
+        const vertexCount = originalPositions.length / 3;
+        const noiseScale = 0.8; // Escala do ruído de Perlin
+        const noiseStrength = 0.15; // Intensidade da deformação pelo ruído
+        const mouseDeformStrength = 0.8; // Intensidade da deformação pelo mouse
+        const mouseDeformRadius = 2.5; // Raio de influência do mouse
+        const lerpFactor = 0.08; // Fator de interpolação para suavizar a animação
+
+        // Itera sobre todos os vértices da esfera para aplicar deformações
+        for (let i = 0; i < vertexCount; i++) {
+          const i3 = i * 3;
+          const originalX = originalPositions[i3];
+          const originalY = originalPositions[i3 + 1];
+          const originalZ = originalPositions[i3 + 2];
+          const currentX = currentVertexPositions[i3];
+          const currentY = currentVertexPositions[i3 + 1];
+          const currentZ = currentVertexPositions[i3 + 2];
+
+          // Aplica ruído Simplex para deformação orgânica
+          const nX = originalX * noiseScale + this.time;
+          const nY = originalY * noiseScale + this.time;
+          const nZ = originalZ * noiseScale + this.time;
+          const noiseValue = noise(nX, nY, nZ);
+
+          const originalNormal = new THREE.Vector3(originalNormals[i3], originalNormals[i3+1], originalNormals[i3+2]);
+          
+          // Calcula a posição alvo do vértice com base no ruído
+          let targetX = originalX + originalNormal.x * noiseValue * noiseStrength;
+          let targetY = originalY + originalNormal.y * noiseValue * noiseStrength;
+          let targetZ = originalZ + originalNormal.z * noiseValue * noiseStrength;
+
+          // Aplica deformação por influência do mouse
+          const vertexWorldPos = new THREE.Vector3(originalX, originalY, originalZ);
+          vertexWorldPos.applyMatrix4(deformableSphere.matrixWorld); // Transforma a posição do vértice para o espaço global
+          const distance = vertexWorldPos.distanceTo(pointOfInfluence);
+
+          if (distance < mouseDeformRadius) {
+            const strength = (1 - (distance / mouseDeformRadius)); // A força diminui com a distância
+            const inwardDirection = new THREE.Vector3().subVectors(deformableSphere.position, vertexWorldPos).normalize(); // Direção para o centro
+            
+            // Move o vértice para dentro (ou para fora, dependendo do sinal da força)
+            targetX += inwardDirection.x * strength * mouseDeformStrength;
+            targetY += inwardDirection.y * strength * mouseDeformStrength;
+            targetZ += inwardDirection.z * strength * mouseDeformStrength;
+          }
+          
+          // Interpolação linear suave para a posição final do vértice
+          positions[i3]     = lerp(lerpFactor, currentX, targetX);
+          positions[i3 + 1] = lerp(lerpFactor, currentY, targetY);
+          positions[i3 + 2] = lerp(lerpFactor, currentZ, targetZ);
+
+          // Atualiza as posições atuais dos vértices para a próxima iteração
+          currentVertexPositions[i3]     = positions[i3];
+          currentVertexPositions[i3 + 1] = positions[i3 + 1];
+          currentVertexPositions[i3 + 2] = positions[i3 + 2];
+        }
+
+        // Marca que as posições dos vértices foram atualizadas para o Three.js
+        deformableSphere.geometry.attributes.position.needsUpdate = true;
+        deformableSphere.geometry.computeVertexNormals(); // Recalcula as normais para iluminação correta
+      }
+
+      // Renderiza a cena com a câmera
+      if (scene && camera && renderer) {
+        renderer.render(scene, camera);
+      }
+    },
+
+    /**
+     * @method createSceneObjects
+     * @description Cria e adiciona a esfera deformável à cena.
+     */
+    createSceneObjects() {
       const sphereGeometry = new THREE.SphereGeometry(1.5, 128, 128);
       originalPositions = Array.from(sphereGeometry.attributes.position.array);
       originalNormals = Array.from(sphereGeometry.attributes.normal.array);
       currentVertexPositions = Array.from(sphereGeometry.attributes.position.array);
+
       const sphereMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xFFFFFF,
         roughness: 0.4,
-        metalness: 0,
-        envMap: environmentMap,
-        envMapIntensity: 1.0,
+        metalness: 0.1,
         emissive: 0x00008b,
-        //emissiveMap: energyTexture,
-        emissiveIntensity: 1.2,
+        emissiveIntensity: 1.5
       });
+      
       deformableSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      deformableSphere.position.y = -0.6;
+      deformableSphere.position.y = -1;
       scene.add(deformableSphere);
-
-      /*const planeGeometry = new THREE.PlaneGeometry(60, 60); 
-      const planeMaterial = new THREE.MeshStandardMaterial({
-        color: 0xF8F8F8, 
-        roughness: 0, 
-        metalness: 0,
-      });
-      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-      plane.rotation.x = -Math.PI / 2;
-      plane.position.y = -2;
-      plane.receiveShadow = false; 
-      scene.add(plane);*/
     },
   },
 };
 </script>
 
 <style scoped>
+/*
+ * O contêiner da cena Three.js.
+ * Nota: 'width: 96vw' e 'height: 96vh' criarão uma margem de 2vw/2vh em cada lado.
+ * Se você deseja que o gradiente preencha *toda* a tela, mesmo nas bordas,
+ * o gradiente CSS deve ser aplicado ao <body> ou ao elemento pai do seu componente.
+ * Alternativamente, mude width/height para 100vw/100vh e position para fixed.
+*/
 .three-scene {
-  width: 96vw;
-  height: 96vh;
   position: absolute;
   touch-action: none;
   top: 0;
@@ -528,13 +408,16 @@ export default {
   right: 0;
   bottom: 0;
   border-radius: 2rem;
-  overflow: hidden;
-  margin: auto;
-  background-image: linear-gradient(to bottom, #C7D9E6, #ffffff);
+  overflow: hidden; /* Importante para o border-radius */
+  margin: auto; /* Centraliza o elemento */
+  width: 100%;
+  height: 100%;
 }
 
+/* Garante que o canvas do Three.js preencha 100% do seu contêiner */
 .three-scene canvas {
   width: 100% !important;
   height: 100% !important;
+  display: block; /* Remove possíveis espaços extras abaixo do canvas */
 }
 </style>

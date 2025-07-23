@@ -110,8 +110,8 @@ export default {
 </style>
 <style>
 .app-box {
-  width: 96vw;
-  height: 96vh;
+  width: calc(100vw - 2.4rem);
+  height: calc(100vh - 2.4rem);
   overflow-y: auto;
   border-radius: 2rem;
   position: absolute;
@@ -120,6 +120,5 @@ export default {
   right: 0;
   bottom: 0;
   margin: auto;
-  background-image: linear-gradient(to bottom, #C7D9E6, #ffffff);
 }
 </style>
