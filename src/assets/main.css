@@ -1,5 +1,14 @@
 @import './base.css';
 
+@font-face {
+    font-family: Ethnocentric;
+    src: local(Ethnocentric),
+         url(@/assets/fonts/Ethnocentric.otf) format("OpenType");
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+}
+
 #app {
   max-width: 1280px;
   width: 100vw;
@@ -15,6 +24,28 @@ a,
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
   padding: 3px;
+}
+
+.btn {
+  padding: var(--space-5) var(--space-8);
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: #ccc;
+  font-family: Ethnocentric;
+  font-size: 12px;
+  transition: all 0.4s ease-in-out;
+  background: var(--white);
+  color: var(--black);
+
+  &:hover {
+    color: #73c2ff;
+  }
+}
+
+.btn-primary {
+  background: var(--black);
+  color: var(--white);
 }
 
 @media (hover: hover) {

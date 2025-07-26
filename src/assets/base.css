@@ -2,6 +2,35 @@
   --black: #101010;
   --blue: #17517E;
   --white: #F8F8F8;
+
+  /* Spaces */
+    --space-0: 1px;
+    --space-1: 4px;
+    --space-2: 6px;
+    --space-3: 8px;
+    --space-4: 12px;
+    --space-5: 16px;
+    --space-6: 20px;
+    --space-7: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-40: 160px;
+    --space-64: 256px;
+    --space-80: 320px;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 100%;
+    
+    /* Box Shadow */
+    --boxshadow-default: 2px 2px 10px rgba(0, 0, 0, 0.05);
+    --boxshadow-regular: 4px 4px 20px rgba(0, 0, 0, 0.15);
+    --boxshadow-bold: 4px 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 @media (prefers-color-scheme: dark) {

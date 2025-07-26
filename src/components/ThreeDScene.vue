@@ -1,5 +1,6 @@
 <template>
   <div ref="container" class="three-scene"></div>
+  <p class="background-text">KINETIC SOLUTIONS</p>
 </template>
 
 <script>
@@ -419,5 +420,27 @@ export default {
   width: 100% !important;
   height: 100% !important;
   display: block; /* Remove possíveis espaços extras abaixo do canvas */
+}
+</style>
+<style scoped>
+.background-text {
+  position: absolute;
+  z-index: 2;
+  top: -2vw;
+  left: -57%;
+  right: 0;
+  margin: auto;
+  white-space: nowrap;
+  font-size: 17.8rem;
+  font-family: Ethnocentric;
+  color: #E3EBF1;
+  opacity: 0.4;
+  transition: all 0.4s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .background-text {
+    top: 20%;
+  }
 }
 </style>
