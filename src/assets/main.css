@@ -48,6 +48,28 @@ a,
   color: var(--white);
 }
 
+::-webkit-scrollbar {
+  width: 8px; /* Largura do scrollbar vertical */
+  height: 8px; /* Altura do scrollbar horizontal */
+}
+
+/* O fundo do scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent; /* Cor de fundo da trilha do scrollbar */
+  border-radius: 10px; /* Borda arredondada da trilha */
+}
+
+/* A "alça" ou "polegar" que você arrasta */
+::-webkit-scrollbar-thumb {
+  background: var(--blue); /* Cor da alça do scrollbar */
+  border-radius: 10px; /* Borda arredondada da alça */
+}
+
+/* Quando o mouse passa por cima da alça */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-low); /* Cor da alça ao passar o mouse */
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);

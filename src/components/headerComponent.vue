@@ -32,12 +32,18 @@ export default {
 </script>
 <style scoped>
 header {
-    position: relative;
+    position: fixed;
+    width: calc(100vw - 2.4rem);
+    border-radius: 2rem 2rem 0 0;
+    top: 1.2rem;
+    left:  1.2rem;
     z-index: 1;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     font-family: Ethnocentric;
-    height: 53px;
+    height: 84px;
+    backdrop-filter: blur(5px);
+    z-index: 9;
 
     & nav {
         position: relative;
@@ -46,7 +52,6 @@ header {
         place-items: center;
         width: 100%;
         height: 100%;
-        margin-top: var(--space-3);
 
         & ul {
             display: flex;
@@ -71,7 +76,6 @@ header {
         z-index: 2;
         width: 100%;
         height: 100%;
-        margin-top: var(--space-3);
     }
 
     & a {
@@ -183,12 +187,12 @@ header {
             &::before {
                 content: "";
                 background: #ACC4D7;
-                border-radius: 22px;
-                width: 35px;
+                border-radius: 113px;
+                width: 43px;
                 height: 40px;
                 position: absolute;
-                top: -1px;
-                left: -61px;
+                top: 0;
+                left: -69px;
                 z-index: 2;
                 transform: skewX(34deg);
             }
@@ -197,11 +201,11 @@ header {
                 content: "";
                 background: #dde8f0;
                 border-radius: 50%;
-                width: 25px;
-                height: 25px;
+                width: 40px;
+                height: 30px;
                 position: absolute;
-                top: -17px;
-                left: -52px;
+                top: -7px;
+                left: -65px;
                 z-index: 1;
             }
         }
@@ -209,13 +213,13 @@ header {
         & .corner-suavization-top-right {
             &::before {
                 left: initial;
-                right: -61px;
+                right: -69px;
                 transform: skewX(-34deg);
             }
 
             &::after {
                 left: initial;
-                right: -52px;
+                right: -65px;
             }
         }
     }

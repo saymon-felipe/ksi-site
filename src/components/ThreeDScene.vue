@@ -1,11 +1,11 @@
 <template>
   <div ref="container" class="three-scene"></div>
-  <p class="background-text">KINETIC SOLUTIONS</p>
 </template>
 
 <script>
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { gsap } from 'gsap';
 
 // --- Funções de Simplex Noise ---
 // Mantidas como estão, pois são utilitárias e funcionais.
@@ -40,12 +40,8 @@ let originalPositions = [];
 let originalNormals = [];
 let currentVertexPositions = [];
 
-// Variáveis para as partículas (energyLines)
-let energyLines = null;
-let particlesData = [];
-const particleCount = 2500;
-const colorDeepBlue = new THREE.Color(0x00008b); // Azul escuro
-const colorCyan = new THREE.Color(0x00FFFF);
+let kineticMesh = null;
+let solutionsMesh = null;
 
 export default {
   name: 'ThreeDScene',
@@ -53,6 +49,21 @@ export default {
     return {
       time: 0, // Usado para animação baseada em tempo
     };
+  },
+  props: {
+    spherePosition: {
+      type: Object,
+      required: false
+    }
+  },
+  watch: {
+    spherePosition: {
+      handler() {
+        this.animateSphere(this.spherePosition.x, this.spherePosition.y, this.spherePosition.z);
+      },
+      deep: true,
+      imediate: true
+    }
   },
   mounted() {
     // Inicializa a cena Three.js quando o componente é montado no DOM
@@ -100,14 +111,6 @@ export default {
     originalPositions = [];
     originalNormals = [];
     currentVertexPositions = [];
-    // environmentMap e energyTexture não estavam sendo criados ou usados, então não precisam de limpeza específica aqui,
-    // mas se forem adicionados, suas disposições seriam necessárias.
-    // energyLines foi adicionado para limpeza no beforeUnmount, o que é bom.
-    if (energyLines) {
-      if (energyLines.geometry) energyLines.geometry.dispose();
-      if (energyLines.material) energyLines.material.dispose();
-      energyLines = null;
-    }
   },
   methods: {
     /**
@@ -137,7 +140,7 @@ export default {
 
       // 3. RENDERIZADOR
       // Renderer WebGL para renderizar a cena no canvas.
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       // Define o tamanho do renderer para preencher o contêiner.
       const container = this.$refs.container;
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -146,6 +149,7 @@ export default {
       // Configurações de tone mapping para melhor aparência das luzes e cores.
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.2;
+      renderer.shadowMap.enabled = true;
       // Anexa o elemento canvas do renderer ao contêiner Vue.
       this.$refs.container.appendChild(renderer.domElement);
 
@@ -161,8 +165,14 @@ export default {
       // 4. LUZES
       this.setupLights();
 
+      document.fonts.ready.then(() => {
+        this.insertFonts();
+        this.animateTextToFinalPosition();
+      })
+
       // 5. OBJETOS DA CENA
       this.createSceneObjects();
+      this.animateSphere(0, -1, 1);
       
       // Ajusta a escala da esfera com base na largura da tela
       this.updateSphereResponsiveness();
@@ -200,7 +210,8 @@ export default {
                   gl_FragColor = vec4(mix(color2, color1, vUv.y), 1.0);
               }
           `,
-          depthWrite: false // Garante que não interfira com outros objetos
+          depthWrite: false, // Garante que não interfira com outros objetos
+          depthTest: false
       });
 
       const gradientPlane = new THREE.Mesh(planeGeometry, gradientMaterial);
@@ -372,7 +383,7 @@ export default {
      * @description Cria e adiciona a esfera deformável à cena.
      */
     createSceneObjects() {
-      const sphereGeometry = new THREE.SphereGeometry(1.5, 128, 128);
+      const sphereGeometry = new THREE.SphereGeometry(1.1, 128, 128);
       originalPositions = Array.from(sphereGeometry.attributes.position.array);
       originalNormals = Array.from(sphereGeometry.attributes.normal.array);
       currentVertexPositions = Array.from(sphereGeometry.attributes.position.array);
@@ -386,9 +397,135 @@ export default {
       });
       
       deformableSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      deformableSphere.position.y = -1;
+      deformableSphere.position.y = -20;
+      deformableSphere.position.z = 0;
       scene.add(deformableSphere);
     },
+    /**
+     * @method createText2DTexture
+     * @description Cria uma textura a partir de um canvas HTML com o texto desejado.
+     * @param {string} text - O texto a ser renderizado.
+     * @param {object} options - Opções de estilização do texto (font, textColor, backgroundColor, padding).
+     * @returns {THREE.CanvasTexture} A textura pronta para ser usada em um material.
+     */
+    createText2DTexture(text, options = {}) {
+      const {
+        font = 'Bold 800px "Ethnocentric"', // Aumentei bastante o tamanho da fonte padrão
+        textColor = '#E3EBF1',
+        backgroundColor = 'rgba(0,0,0,0)',
+        padding = 40 // Aumentei o padding também
+      } = options;
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+
+      context.font = font;
+      const metrics = context.measureText(text);
+      const textWidth = metrics.width;
+      const textHeight = parseInt(font.match(/\d+/) * 1.2);
+
+      canvas.width = (textWidth + padding * 2) * dpr;
+      canvas.height = (textHeight + padding * 2) * dpr;
+
+      context.scale(dpr, dpr);
+
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      context.font = font;
+      context.fillStyle = textColor;
+      context.textAlign = 'left';
+      context.textBaseline = 'top';
+      context.fillText(text, padding, padding);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+
+      return texture;
+    },
+    insertFonts: function () {
+      // 1. Criar texturas para "KINETIC" e "SOLUTIONS" usando a nova função
+      const kineticTexture = this.createText2DTexture('KINETIC', {
+          font: 'Bold 2000px "Ethnocentric"', // Use a fonte desejada
+          textColor: '#E3EBF1' // A cor do seu texto de fundo
+          // opacity não é passado aqui, será no material
+      });
+
+      const solutionsTexture = this.createText2DTexture('SOLUTIONS', {
+          font: 'Bold 2000px "Ethnocentric"',
+          textColor: '#E3EBF1'
+      });
+
+      // 2. Calcular a proporção das texturas para manter o aspecto
+      const kineticAspectRatio = kineticTexture.image.width / kineticTexture.image.height;
+      const solutionsAspectRatio = solutionsTexture.image.width / solutionsTexture.image.height;
+
+      // 3. Definir o tamanho base dos planos de texto na cena (ajuste 'textHeightInScene' conforme necessário)
+      const textHeightInScene = 3; // A altura visual do seu texto na cena 3D
+
+      // 4. Criar as geometrias de plano
+      const kineticPlaneGeometry = new THREE.PlaneGeometry(textHeightInScene * kineticAspectRatio, textHeightInScene);
+      const solutionsPlaneGeometry = new THREE.PlaneGeometry(textHeightInScene * solutionsAspectRatio, textHeightInScene);
+
+      // 5. Criar materiais com as texturas
+      const kineticMaterial = new THREE.MeshBasicMaterial({
+          map: kineticTexture,
+          transparent: true,
+          side: THREE.DoubleSide,
+          opacity: 0.4 // Opacidade do material do texto
+      });
+
+      const solutionsMaterial = new THREE.MeshBasicMaterial({
+          map: solutionsTexture,
+          transparent: true,
+          side: THREE.DoubleSide,
+          opacity: 0.4
+      });
+
+      // 6. Criar os meshes
+      kineticMesh = new THREE.Mesh(kineticPlaneGeometry, kineticMaterial);
+      solutionsMesh = new THREE.Mesh(solutionsPlaneGeometry, solutionsMaterial);
+
+      // 7. Posicionar os meshes
+      kineticMesh.position.set(-20, 0.7, -1);
+      solutionsMesh.position.set(80, -2, -1); 
+
+      // 8. Adicionar à cena
+      scene.add(kineticMesh);
+      scene.add(solutionsMesh);
+    },
+    animateTextToFinalPosition() {
+        if (kineticMesh && solutionsMesh) {
+            // Anima o kineticMesh
+            gsap.to(kineticMesh.position, {
+                x: -5,          // Posição X final
+                y: 0.7,         // Posição Y final
+                z: -1,          // Posição Z final (não muda neste caso, mas é bom ser explícito)
+                duration: 2,  // Duração da animação em segundos
+                ease: "power2.out" // Tipo de easing para o "ease in-out"
+            });
+
+            // Anima o solutionsMesh
+            gsap.to(solutionsMesh.position, {
+                x: 7,           // Posição X final
+                y: -2,          // Posição Y final
+                z: -1,          // Posição Z final
+                duration: 2,
+                ease: "power2.out"
+            });
+        }
+    },
+    animateSphere: function (x, y, z) {
+      gsap.to(deformableSphere.position, {
+          x: x,          // Posição X final
+          y: y,         // Posição Y final
+          z: z,          // Posição Z final (não muda neste caso, mas é bom ser explícito)
+          duration: 2.2,  // Duração da animação em segundos
+          ease: "power2.inOut" // Tipo de easing para o "ease in-out"
+      });
+    }
   },
 };
 </script>
@@ -402,17 +539,14 @@ export default {
  * Alternativamente, mude width/height para 100vw/100vh e position para fixed.
 */
 .three-scene {
-  position: absolute;
+  position: fixed;
   touch-action: none;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 1.2rem;
+  left: 1.2rem;
+  right: 1.2rem;
+  bottom: 1.2rem;
   border-radius: 2rem;
   overflow: hidden; /* Importante para o border-radius */
-  margin: auto; /* Centraliza o elemento */
-  width: 100%;
-  height: 100%;
 }
 
 /* Garante que o canvas do Three.js preencha 100% do seu contêiner */
@@ -420,27 +554,7 @@ export default {
   width: 100% !important;
   height: 100% !important;
   display: block; /* Remove possíveis espaços extras abaixo do canvas */
-}
-</style>
-<style scoped>
-.background-text {
-  position: absolute;
-  z-index: 2;
-  top: -2vw;
-  left: -57%;
-  right: 0;
-  margin: auto;
-  white-space: nowrap;
-  font-size: 17.8rem;
-  font-family: Ethnocentric;
-  color: #E3EBF1;
-  opacity: 0.4;
-  transition: all 0.4s ease-in-out;
-}
-
-@media (max-width: 768px) {
-  .background-text {
-    top: 20%;
-  }
+  border-radius: 2rem;
+  overflow: hidden;
 }
 </style>

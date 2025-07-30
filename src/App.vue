@@ -1,8 +1,11 @@
 <template>
   <main class="app-box">
     <headerComponent></headerComponent>
-    <ThreeDScene />
+    <ThreeDScene :spherePosition="spherePosition" />
     <div ref="lottieContainer" id="lottieContainer"></div>
+    <div class="app-box-content">
+      
+    </div>
   </main>
 </template>
 
@@ -18,33 +21,51 @@ export default {
     ThreeDScene,
     headerComponent
   },
-  mounted: function () {
-        this.lottieAnimation = lottie.loadAnimation({
-            container: this.$refs.lottieContainer,
-            renderer: "svg",
-            loop: true,
-            autoplay: true,
-            animationData: animationData
-        });
-    },
-    destroyed() {
-        this.lottieAnimation.destroy();
+  data() {
+    return {
+      spherePosition: {}
     }
+  },
+  mounted: function () {
+    this.lottieAnimation = lottie.loadAnimation({
+        container: this.$refs.lottieContainer,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        animationData: animationData
+    });
+
+    document.addEventListener("scroll", (e) => {
+      console.log(e)
+    })
+  },
+  destroyed() {
+      this.lottieAnimation.destroy();
+  }
 };
 </script>
 <style>
 .app-box {
   width: calc(100vw - 2.4rem);
   height: calc(100vh - 2.4rem);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   border-radius: 2rem;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   margin: auto;
+  scroll-behavior: smooth;
+
+  & .app-box-content {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 3;
+    height: 100%;
+    width: 100%;
+  }  
 }
 
 #lottieContainer {
