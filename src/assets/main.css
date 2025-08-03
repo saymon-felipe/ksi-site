@@ -9,6 +9,26 @@
     font-stretch: normal;
 }
 
+@font-face {
+    font-family: AnonymousPro;
+    src: local(AnonymousPro),
+         url(@/assets/fonts/AnonymousPro.ttf) format("TrueType");
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+}
+
+.primary-font {
+  font-family: Ethnocentric !important;
+  color: var(--black);
+}
+
+.secondary-font {
+  font-weight: 600;
+  font-family: AnonymousPro !important;
+  color: var(--black);
+}
+
 #app {
   max-width: 1280px;
   width: 100vw;
@@ -37,15 +57,27 @@ a,
   transition: all 0.4s ease-in-out;
   background: var(--white);
   color: var(--black);
+  user-select: none;
 
   &:hover {
     color: #73c2ff;
+    transform: translateY(-5px);
   }
 }
 
 .btn-primary {
   background: var(--black);
   color: var(--white);
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: var(--boxshadow-bold);
+  background: var(--white);
 }
 
 ::-webkit-scrollbar {

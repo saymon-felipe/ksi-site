@@ -1,6 +1,6 @@
 <template>
     <header>
-        <nav>
+        <nav v-scroll-reveal="{ delay: 500, origin: 'top' }">
             <ul>
                 <li>Clientes</li>
                 <li>Serviços</li>
@@ -13,11 +13,11 @@
             <div class="corner-suavization-top-left"></div>
             <div class="corner-suavization-top-right"></div>
             <a href="/">
-                <img src="../assets/img/ksi.png" loading="lazy" alt="KSI - Kinetic Solutions"></img>
+                <img src="../assets/img/ksi.png" v-scroll-reveal="{ delay: 500, origin: 'top' }" loading="lazy" alt="KSI - Kinetic Solutions"></img>
             </a>
         </div>
         <div>&nbsp;</div>
-        <div class="right-content">
+        <div class="right-content" v-scroll-reveal="{ delay: 500, origin: 'top' }">
             <span>Login</span>
             <button type="button" class="btn btn-primary">Cadastre-se</button>
         </div>

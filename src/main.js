@@ -2,5 +2,10 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import { vScrollReveal } from './directives/scrollReveal';
 
-createApp(App).mount('#app')
+const app = createApp(App);
+
+app.directive('scroll-reveal', vScrollReveal);
+
+app.mount('#app');

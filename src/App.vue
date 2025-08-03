@@ -1,17 +1,21 @@
 <template>
   <main class="app-box">
     <headerComponent></headerComponent>
-    <ThreeDScene :spherePosition="spherePosition" />
-    <div ref="lottieContainer" id="lottieContainer"></div>
+    
     <div class="app-box-content">
-      
+      <heroComponent></heroComponent>
+      <div ref="lottieContainer" id="lottieContainer" v-scroll-reveal="{ delay: 500, origin: 'right', distance: '80px' }"></div>
     </div>
+
+    <ThreeDScene :spherePosition="spherePosition" />
+    <span class="primary-font signature" v-scroll-reveal="{ delay: 500, origin: 'bottom' }">© {{ year }} KSI. todos os direitos reservados.</span>
   </main>
 </template>
 
 <script>
 import ThreeDScene from './components/ThreeDScene.vue';
 import headerComponent from "./components/headerComponent.vue";
+import heroComponent from "./components/heroComponent.vue";
 import lottie from "lottie-web";
 import animationData from "./assets/animations/sphere.json";
 
@@ -19,11 +23,13 @@ export default {
   name: 'App', // Nome do componente principal
   components: {
     ThreeDScene,
-    headerComponent
+    headerComponent,
+    heroComponent
   },
   data() {
     return {
-      spherePosition: {}
+      spherePosition: {},
+      year: new Date().getFullYear()
     }
   },
   mounted: function () {
@@ -65,6 +71,18 @@ export default {
     z-index: 3;
     height: 100%;
     width: 100%;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 100%;
+    max-width: 1600px;
+    height: calc(100% - 80px);
+    display: flex;
+    justify-content: center;
+    padding: var(--space-6);
   }  
 }
 
@@ -73,5 +91,14 @@ export default {
   position: absolute;
   bottom: 2rem;
   right: 2rem;
+}
+
+.signature {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 4rem;
+  font-size: 14px;
+  color: var(--blue);
+  margin-right: var(--space-6);
 }
 </style>
