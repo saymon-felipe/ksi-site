@@ -10,6 +10,7 @@ const sr = ScrollReveal({
 export const vScrollReveal = {
   mounted(el, binding) {
     const config = binding.value || {};
+    el.classList.add("scroll-reveal")
     sr.reveal(el, config);
   },
 };

@@ -29,6 +29,10 @@
   color: var(--black);
 }
 
+.scroll-reveal {
+  visibility: hidden;
+}
+
 #app {
   max-width: 1280px;
   width: 100vw;

@@ -18,6 +18,7 @@
         </div>
         <div>&nbsp;</div>
         <div class="right-content" v-scroll-reveal="{ delay: 500, origin: 'top' }">
+            <span style="margin-right: 5rem;">LABORATÓRIO KSI</span>
             <span>Login</span>
             <button type="button" class="btn btn-primary">Cadastre-se</button>
         </div>
