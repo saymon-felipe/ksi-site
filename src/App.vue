@@ -101,4 +101,14 @@ export default {
   color: var(--blue);
   margin-right: var(--space-6);
 }
+
+@media (max-width: 541px) {
+  .signature {
+    margin: auto;
+    left: 0;
+    right: 0;
+    padding: 0 2rem;
+    text-align: center;
+  }
+}
 </style>

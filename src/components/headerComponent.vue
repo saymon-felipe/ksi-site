@@ -23,6 +23,7 @@
             <span>Login</span>
             <button type="button" class="btn btn-primary">Cadastre-se</button>
         </div>
+        <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
         <div class="responsive-menu" :class="menuState">
             <ul>
                 <li>Clientes</li>
@@ -266,9 +267,21 @@ header {
     top: 1.5rem;
     font-size: 1.5rem;
     cursor: pointer;
+    z-index: 12;
+}
+
+.responsive-menu-wrapper {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: transparent;
+    z-index: 11;
 }
 
 .responsive-menu {
+    z-index: 12;
     background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(5px) saturate(180%);
     width: calc(100vw - 2.4rem);
@@ -358,7 +371,7 @@ header {
         max-height: 300px;
     }*/
 
-    90% {
+    70% {
         opacity: 1;
     }
 
@@ -380,6 +393,40 @@ header {
 
     .menu-responsive-button {
         display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo {
+        &::before {
+            left: -26px !important;
+            width: 28px !important;
+        }
+
+        &::after {
+            right: -26px !important;
+            width: 28px !important;
+        }
+
+        & .corner-suavization-bottom-left {
+            &::before {
+                width: 76px !important;
+                height: 25px !important;
+                bottom: -7px !important;
+                left: -63px !important;
+                transform: skew(-20deg, 20deg) !important;
+            }
+        }
+
+        & .corner-suavization-bottom-right {
+            &::before {
+                width: 76px !important;
+                height: 25px !important;
+                bottom: -7px !important;
+                right: -63px !important;
+                transform: skew(20deg, -20deg) !important;
+            }
+        }
     }
 }
 </style>

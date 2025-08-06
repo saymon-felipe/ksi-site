@@ -27,7 +27,7 @@
                 <img src="../assets/img/clientes/comprarapida.png" class="avatar" title="Compra Rápida" alt="Compra Rápida" />
             </div>
             <p class="secondary-font">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="space">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 Sua visão nos move, nossa expertise te guia. Entregamos soluções dinâmicas para o ritmo do seu negócio, garantindo a confiança que você precisa para ir além.
             </p>
         </div>
@@ -86,6 +86,7 @@ export default {
 .hero-buttons {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: var(--space-6);
     margin: var(--space-10) 0;
 }
@@ -181,6 +182,39 @@ export default {
 
     100% {
         transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.3rem !important;
+    }
+}
+
+@media (max-width: 541px) {
+    .customers-container {
+        left: 0;
+        right: 0;
+        margin: auto;
+
+        & p {
+            text-align: center;
+        }
+        
+        & .space {
+            display: none;
+        }
+
+        .images-group {
+            margin: auto;
+            transform: translateX(15px);
+        }
+    }
+}
+
+@media (max-width: 468px) {
+    h1 {
+        font-size: 1.9rem !important;
     }
 }
 </style>
