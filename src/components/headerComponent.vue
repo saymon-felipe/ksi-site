@@ -1,10 +1,11 @@
 <template>
     <header>
-        <nav v-scroll-reveal="{ delay: 500, origin: 'top' }">
+        <nav v-scroll-reveal="{ delay: 500, origin: 'top' }" class="menu">
             <ul>
                 <li>Clientes</li>
                 <li>Serviços</li>
                 <li>Sobre nós</li>
+                <li>KSI LAB</li>
             </ul>
         </nav>
         <div class="logo">
@@ -17,21 +18,64 @@
             </a>
         </div>
         <div>&nbsp;</div>
-        <div class="right-content" v-scroll-reveal="{ delay: 500, origin: 'top' }">
-            <span style="margin-right: 5rem;">LABORATÓRIO KSI</span>
+        <font-awesome-icon icon="bars" class="menu-responsive-button" v-on:click="showMenu = !showMenu" />
+        <div class="right-content menu" v-scroll-reveal="{ delay: 500, origin: 'top' }">
             <span>Login</span>
             <button type="button" class="btn btn-primary">Cadastre-se</button>
+        </div>
+        <div class="responsive-menu" :class="menuState">
+            <ul>
+                <li>Clientes</li>
+                <li>Serviços</li>
+                <li>Sobre nós</li>
+                <li>KSI LAB</li>
+                <li>
+                    <span>Login</span>
+                    <button type="button" class="btn btn-primary">Cadastre-se</button>
+                </li>
+            </ul>
         </div>
     </header>
 </template>
 <script>
 export default {
+    data() {
+        return {
+            showMenu: false,
+            menuState: ""
+        }
+    },
+    watch: {
+        showMenu: {
+            handler() {
+                if (this.showMenu) {
+                    this.menuState = "open";
+                } else {
+                    this.menuState = "close";
+                }
+            },
+            immediate: false
+        }
+    },
     mounted() {
         
     }
 }
 </script>
 <style scoped>
+ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    list-style-type: none;
+    gap: var(--space-3);
+
+    & li {
+        margin: 0 var(--space-3);
+        cursor: pointer;
+    }
+}
+
 header {
     position: fixed;
     width: calc(100vw - 2.4rem);
@@ -53,18 +97,6 @@ header {
         place-items: center;
         width: 100%;
         height: 100%;
-
-        & ul {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            list-style-type: none;
-            gap: var(--space-3);
-
-            & li {
-                margin: 0 var(--space-3);
-            }
-        }
     }
 
     & .right-content {
@@ -112,8 +144,8 @@ header {
             content: '';
             position: absolute;
             top: 0;
-            left: -98px; /* Ajuste para o ângulo */
-            width: 100px;
+            left: -44px;
+            width: 45px;
             height: 100%;
             background-color: #ACC4D7; /* Cor mais escura para o chanfro */
             transform: skewX(39deg); /* Ângulo para o chanfro esquerdo */
@@ -124,8 +156,8 @@ header {
             content: '';
             position: absolute;
             top: 0;
-            right: -98px; /* Ajuste para o ângulo */
-            width: 100px;
+            right: -44px; /* Ajuste para o ângulo */
+            width: 45px;
             height: 100%;
             background-color: #ACC4D7; /* Cor mais escura para o chanfro */
             transform: skewX(-39deg); /* Ângulo para o chanfro esquerdo */
@@ -223,6 +255,131 @@ header {
                 right: -65px;
             }
         }
+    }
+}
+
+.menu-responsive-button {
+    display: none;
+    z-index: 10;
+    position: absolute;
+    right: 1.5rem;   
+    top: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.responsive-menu {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px) saturate(180%);
+    width: calc(100vw - 2.4rem);
+    position: absolute;
+    max-height: 300px;
+    height: fit-content;
+    top: 216px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    padding: 2rem;
+    place-items: start;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2), 
+                inset 0 4px 20px rgba(255, 255, 255, 0.3);
+
+    width: 0;
+    max-height: 0;
+    opacity: 0;
+
+    & ul {
+        display: grid;
+        place-items: start;
+        padding: 0;
+        transition: opacity .6s ease-in-out;
+        opacity: 0;
+
+        & li {
+            display: grid;
+            place-items: start;
+            gap: var(--space-5);
+
+            &:last-child {
+                margin-top: var(--space-6);
+            }
+        }
+    }
+
+    &.close {
+        animation: close 1s ease-in-out forwards;
+
+        & ul {
+            opacity: 0;
+        }
+    }
+
+    &.open {
+        animation: open 1s ease-in-out forwards;
+
+        & ul {
+            transition-delay: .8s;
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes open {
+    0% {
+        width: 0;
+        max-height: 0;
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        width: calc(100vw - 2.4rem);
+        max-height: 300px;
+        opacity: 1;
+    }
+}
+
+@keyframes close {
+    0% {
+        width: calc(100vw - 2.4rem);
+        max-height: 300px;
+        opacity: 1;
+    }
+
+    /*50% {
+        width: 0;
+        max-height: 300px;
+    }*/
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        width: 0;
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+@media (max-width: 896px) {
+    header {
+        backdrop-filter: none !important;
+    }
+
+    .menu {
+        display: none !important;
+    }
+
+    .menu-responsive-button {
+        display: block;
     }
 }
 </style>
