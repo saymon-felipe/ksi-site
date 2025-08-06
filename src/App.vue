@@ -4,7 +4,6 @@
     
     <div class="app-box-content">
       <heroComponent></heroComponent>
-      <div ref="lottieContainer" id="lottieContainer" v-scroll-reveal="{ delay: 500, origin: 'right', distance: '80px' }"></div>
     </div>
 
     <ThreeDScene :spherePosition="spherePosition" />
@@ -16,8 +15,6 @@
 import ThreeDScene from './components/ThreeDScene.vue';
 import headerComponent from "./components/headerComponent.vue";
 import heroComponent from "./components/heroComponent.vue";
-import lottie from "lottie-web";
-import animationData from "./assets/animations/sphere.json";
 
 export default {
   name: 'App', // Nome do componente principal
@@ -33,20 +30,11 @@ export default {
     }
   },
   mounted: function () {
-    this.lottieAnimation = lottie.loadAnimation({
-        container: this.$refs.lottieContainer,
-        renderer: "svg",
-        loop: true,
-        autoplay: true,
-        animationData: animationData
-    });
+    
 
     document.addEventListener("scroll", (e) => {
       console.log(e)
     })
-  },
-  destroyed() {
-      this.lottieAnimation.destroy();
   }
 };
 </script>
@@ -84,13 +72,6 @@ export default {
     justify-content: center;
     padding: var(--space-6);
   }  
-}
-
-#lottieContainer {
-  width: calc(15vw + 2rem);
-  position: absolute;
-  bottom: 2rem;
-  right: 2rem;
 }
 
 .signature {

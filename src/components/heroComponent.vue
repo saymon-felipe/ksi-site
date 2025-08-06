@@ -31,10 +31,15 @@
                 Sua visão nos move, nossa expertise te guia. Entregamos soluções dinâmicas para o ritmo do seu negócio, garantindo a confiança que você precisa para ir além.
             </p>
         </div>
+
+        <div ref="lottieContainer" id="lottieContainer" v-scroll-reveal="{ delay: 500, origin: 'right', distance: '80px' }"></div>
     </div>
 </template>
 
 <script>
+import lottie from "lottie-web";
+import animationData from "../assets/animations/sphere.json";
+
 export default {
     data() {
         return {
@@ -46,14 +51,30 @@ export default {
         this.intervalId = setInterval(() => {
             this.isFirstTextVisible = !this.isFirstTextVisible;
         }, 5000); // Alterna a cada 5 segundos
+
+        this.lottieAnimation = lottie.loadAnimation({
+            container: this.$refs.lottieContainer,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            animationData: animationData
+        });
     },
     unmounted() {
+        this.lottieAnimation.destroy();
         clearInterval(this.intervalId);
     }
 };
 </script>
 
 <style scoped>
+#lottieContainer {
+  width: calc(15vw + 2rem);
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+}
+
 /* Transição de entrada e saída para o loop de texto */
 .fade-slide-enter-active {
   transition: all 0.5s ease-out;
