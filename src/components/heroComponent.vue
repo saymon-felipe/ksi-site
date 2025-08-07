@@ -1,6 +1,6 @@
 <template>
-    <div class="hero-content">
-        <h1 v-scroll-reveal="{ delay: 500, origin: 'bottom' }">
+    <section id="hero" class="hero-content">
+        <h1 v-scroll-reveal="{ delay: 500, origin: 'bottom', container: '.app-box-content' }">
             <span class="secondary-font" style="transition: all 0.4s ease-in-out;">FORÇA DA INOVAÇÃO. IDEIAS DO FUTURO.</span>
             
             <Transition name="fade-slide" mode="out-in">
@@ -13,18 +13,18 @@
             </Transition>
         </h1>
         
-        <div class="hero-buttons" v-scroll-reveal="{ delay: 500, origin: 'top' }">
+        <div class="hero-buttons" v-scroll-reveal="{ delay: 500, origin: 'top', container: '.app-box-content' }">
             <button type="button" class="btn btn-primary bounce-repeat">ORÇAMENTO GRATUITO</button>
             <button type="button" class="btn">VER CLIENTES</button>
         </div>
         
-        <div class="customers-container" v-scroll-reveal="{ delay: 500, origin: 'left' }">
+        <div class="customers-container" v-scroll-reveal="{ delay: 500, origin: 'left', container: '.app-box-content' }">
             <div class="images-group">
-                <img src="../assets/img/clientes/solutto.png" class="avatar" title="Solutto" alt="Solutto" />
-                <img src="../assets/img/clientes/mokaly.png" class="avatar" title="Mokaly" alt="Mokaly" />
-                <img src="../assets/img/clientes/cademint.png" class="avatar" title="Cademint" alt="Cademint" />
-                <img src="../assets/img/clientes/agendaspro.png" class="avatar" title="AgendasPro" alt="AgendasPro" />
-                <img src="../assets/img/clientes/comprarapida.png" class="avatar" title="Compra Rápida" alt="Compra Rápida" />
+                <img src="../assets/img/clientes/solutto.png" loading="lazy" class="avatar" title="Solutto" alt="Solutto" />
+                <img src="../assets/img/clientes/mokaly.png" loading="lazy" class="avatar" title="Mokaly" alt="Mokaly" />
+                <img src="../assets/img/clientes/cademint.png" loading="lazy" class="avatar" title="Cademint" alt="Cademint" />
+                <img src="../assets/img/clientes/agendaspro.png" loading="lazy" class="avatar" title="AgendasPro" alt="AgendasPro" />
+                <img src="../assets/img/clientes/comprarapida.png" loading="lazy" class="avatar" title="Compra Rápida" alt="Compra Rápida" />
             </div>
             <p class="secondary-font">
                 <span class="space">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -32,8 +32,8 @@
             </p>
         </div>
 
-        <div ref="lottieContainer" id="lottieContainer" v-scroll-reveal="{ delay: 500, origin: 'right', distance: '80px' }"></div>
-    </div>
+        <div ref="lottieContainer" id="lottieContainer" v-scroll-reveal="{ delay: 500, origin: 'right', container: '.app-box-content' }"></div>
+    </section>
 </template>
 
 <script>
@@ -95,13 +95,7 @@ export default {
 }
 
 .hero-content {
-  width: 95vw;
-  max-width: 700px;
-  text-align: center;
-
-  & h1 {
-    font-size: 2.7rem;
-  }
+  max-width: 700px !important;
 }
 
 .hero-buttons {
@@ -206,12 +200,6 @@ export default {
     }
 }
 
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2.3rem !important;
-    }
-}
-
 @media (max-width: 541px) {
     .customers-container {
         left: 0;
@@ -230,12 +218,6 @@ export default {
             margin: auto;
             transform: translateX(15px);
         }
-    }
-}
-
-@media (max-width: 468px) {
-    h1 {
-        font-size: 1.9rem !important;
     }
 }
 </style>

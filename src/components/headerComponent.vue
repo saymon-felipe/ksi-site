@@ -2,7 +2,7 @@
     <header>
         <nav v-scroll-reveal="{ delay: 500, origin: 'top' }" class="menu">
             <ul>
-                <li>Clientes</li>
+                <li><a href="#clientes">Clientes</a></li>
                 <li>Serviços</li>
                 <li>Sobre nós</li>
                 <li>KSI LAB</li>
@@ -13,7 +13,7 @@
             <div class="corner-suavization-bottom-right"></div>
             <div class="corner-suavization-top-left"></div>
             <div class="corner-suavization-top-right"></div>
-            <a href="/">
+            <a href="#hero">
                 <img src="../assets/img/ksi.png" v-scroll-reveal="{ delay: 500, origin: 'top' }" loading="lazy" alt="KSI - Kinetic Solutions"></img>
             </a>
         </div>
@@ -24,9 +24,9 @@
             <button type="button" class="btn btn-primary">Cadastre-se</button>
         </div>
         <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
-        <div class="responsive-menu" :class="menuState">
+        <div class="responsive-menu glass" :class="menuState">
             <ul>
-                <li>Clientes</li>
+                <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
                 <li>Serviços</li>
                 <li>Sobre nós</li>
                 <li>KSI LAB</li>
@@ -115,10 +115,11 @@ header {
     & a {
         padding: 0;
         line-height: 83%;
+        color: var(--black);
 
-        &:hover {
+        &:hover, &.active {
             background: none;
-            color: none;
+            color: var(--blue);
         }
 
         & img {
@@ -282,8 +283,6 @@ header {
 
 .responsive-menu {
     z-index: 12;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(5px) saturate(180%);
     width: calc(100vw - 2.4rem);
     position: absolute;
     max-height: 300px;
@@ -296,11 +295,6 @@ header {
     padding: 2rem;
     place-items: start;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 2rem;
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2), 
-                inset 0 4px 20px rgba(255, 255, 255, 0.3);
-
     width: 0;
     max-height: 0;
     opacity: 0;
@@ -308,6 +302,7 @@ header {
     & ul {
         display: grid;
         place-items: start;
+        gap: var(--space-6);
         padding: 0;
         transition: opacity .6s ease-in-out;
         opacity: 0;
@@ -354,7 +349,7 @@ header {
 
     100% {
         width: calc(100vw - 2.4rem);
-        max-height: 300px;
+        max-height: 400px;
         opacity: 1;
     }
 }
@@ -362,7 +357,7 @@ header {
 @keyframes close {
     0% {
         width: calc(100vw - 2.4rem);
-        max-height: 300px;
+        max-height: 400px;
         opacity: 1;
     }
 

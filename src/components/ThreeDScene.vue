@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { gsap } from 'gsap';
+import { text } from '@fortawesome/fontawesome-svg-core';
 
 // --- Funções de Simplex Noise ---
 // Mantidas como estão, pois são utilitárias e funcionais.
@@ -54,15 +55,26 @@ export default {
     spherePosition: {
       type: Object,
       required: false
+    },
+    text: {
+      type: Object,
+      required: false
     }
   },
   watch: {
     spherePosition: {
       handler() {
-        this.animateSphere(this.spherePosition.x, this.spherePosition.y, this.spherePosition.z);
+        this.animateSphere(this.spherePosition.x, this.spherePosition.y, this.spherePosition.z, this.spherePosition.scale);
       },
-      deep: true,
-      imediate: true
+      deep: true
+    },
+    text: {
+      handler() {
+        if (this.text?.refresh) {
+          this.repeatTextAnimation();
+        }
+      },
+      deep: true
     }
   },
   mounted() {
@@ -172,7 +184,7 @@ export default {
 
       // 5. OBJETOS DA CENA
       this.createSceneObjects();
-      this.animateSphere(0, -1, 1);
+      this.animateSphere(0, -1, 1, 1);
       
       // Ajusta a escala da esfera com base na largura da tela
       this.updateSphereResponsiveness();
@@ -256,7 +268,7 @@ export default {
         // if (energyLines) energyLines.visible = true; // Opcional: mostrar partículas
         
         // Escala a esfera proporcionalmente à largura da tela
-        const scale = Math.max(0.55, Math.min(1.0, screenWidth / 1400));
+        let scale = Math.max(0.55, Math.min(1.0, screenWidth / 1400));
         deformableSphere.scale.set(scale, scale, scale);
       }
     },
@@ -517,11 +529,43 @@ export default {
             });
         }
     },
-    animateSphere: function (x, y, z) {
+    repeatTextAnimation: function () {
+      if (kineticMesh && solutionsMesh) {
+        gsap.to(kineticMesh.position, {
+            x: -20,          // Posição X final
+            y: 0.7,         // Posição Y final
+            z: -1,          // Posição Z final (não muda neste caso, mas é bom ser explícito)
+            duration: 2,  // Duração da animação em segundos
+            ease: "power2.out" // Tipo de easing para o "ease in-out"
+        });
+
+        // Anima o solutionsMesh
+        gsap.to(solutionsMesh.position, {
+            x: 20,           // Posição X final
+            y: -2,          // Posição Y final
+            z: -1,          // Posição Z final
+            duration: 2,
+            ease: "power2.out"
+        });
+
+        setTimeout(() => {
+          this.animateTextToFinalPosition();
+        }, 700)
+      }
+    },
+    animateSphere: function (x, y, z, scale) {
       gsap.to(deformableSphere.position, {
           x: x,          // Posição X final
           y: y,         // Posição Y final
           z: z,          // Posição Z final (não muda neste caso, mas é bom ser explícito)
+          duration: 2.2,  // Duração da animação em segundos
+          ease: "power2.inOut" // Tipo de easing para o "ease in-out"
+      });
+      
+      gsap.to(deformableSphere.scale, {
+          x: scale,
+          y: scale,
+          z: scale,
           duration: 2.2,  // Duração da animação em segundos
           ease: "power2.inOut" // Tipo de easing para o "ease in-out"
       });
