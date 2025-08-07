@@ -215,6 +215,10 @@ export default {
         box-shadow: var(--boxshadow-regular);
     }
 
+    & .imagem {
+        width: 100%;
+    }
+
     & .icone {
         position: absolute;
         top: 1rem;
