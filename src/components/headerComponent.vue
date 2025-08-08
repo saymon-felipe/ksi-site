@@ -3,7 +3,7 @@
         <nav v-scroll-reveal="{ delay: 500, origin: 'top' }" class="menu">
             <ul>
                 <li><a href="#clientes">Clientes</a></li>
-                <li>Serviços</li>
+                <li><a href="#servicos">Serviços</a></li>
                 <li>Sobre nós</li>
                 <li>KSI LAB</li>
             </ul>
@@ -20,19 +20,19 @@
         <div>&nbsp;</div>
         <font-awesome-icon icon="bars" class="menu-responsive-button" v-on:click="showMenu = !showMenu" />
         <div class="right-content menu" v-scroll-reveal="{ delay: 500, origin: 'top' }">
-            <span>Login</span>
-            <button type="button" class="btn btn-primary">Cadastre-se</button>
+            <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
+            <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
         </div>
         <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
         <div class="responsive-menu glass" :class="menuState">
             <ul>
                 <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
-                <li>Serviços</li>
+                <li><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
                 <li>Sobre nós</li>
                 <li>KSI LAB</li>
                 <li>
-                    <span>Login</span>
-                    <button type="button" class="btn btn-primary">Cadastre-se</button>
+                    <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
+                    <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
                 </li>
             </ul>
         </div>

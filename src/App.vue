@@ -5,10 +5,17 @@
     <div class="app-box-content">
       <heroComponent></heroComponent>
       <customersComponent></customersComponent>
+      <servicesComponent></servicesComponent>
     </div>
 
     <ThreeDScene :spherePosition="spherePosition" :text="text" />
-    <span class="primary-font signature" v-scroll-reveal="{ delay: 500, origin: 'bottom' }">© {{ year }} KSI. todos os direitos reservados.</span>
+    <span class="primary-font signature" v-scroll-reveal="{ delay: 500, origin: 'bottom' }">
+      <span>© {{ year }} KSI. todos os direitos reservados.</span>
+
+      <a href="https://www.linkedin.com/company/ksikineticsolutions" target="_blank">
+        <font-awesome-icon title="Linkedin: KSI - Kinetic Solutions" :icon="['fab', 'linkedin']" />
+      </a>
+    </span>
   </main>
 </template>
 
@@ -17,6 +24,7 @@ import ThreeDScene from './components/ThreeDScene.vue';
 import headerComponent from "./components/headerComponent.vue";
 import heroComponent from "./components/heroComponent.vue";
 import customersComponent from "./components/customersComponent.vue";
+import servicesComponent from "./components/servicesComponent.vue";
 
 export default {
   name: 'App', // Nome do componente principal
@@ -24,7 +32,8 @@ export default {
     ThreeDScene,
     headerComponent,
     heroComponent,
-    customersComponent
+    customersComponent,
+    servicesComponent
   },
   data() {
     return {
@@ -37,16 +46,18 @@ export default {
     
 
     document.querySelector(".app-box-content").addEventListener("scroll", (e) => {
-      let containerHeight = Math.floor(document.querySelector("#hero").getBoundingClientRect().height);
+      let containerHeight = Math.floor(document.querySelector("#hero").getBoundingClientRect().height) + 21;
       let scrollTop = Math.floor(e.target.scrollTop);
-
-      if (scrollTop < containerHeight) { //primeira sessão
+      
+      if (scrollTop < (containerHeight / 2)) { //primeira sessão
         this.text = { refresh: true };
         this.spherePosition = { x: 0, y: -1, z: 1, scale: 1 };
-      } else if (scrollTop == containerHeight) { //segunda sessão
+      } else if (scrollTop < (containerHeight + (containerHeight / 2))) { //segunda sessão
         this.text = { refresh: true };
         this.spherePosition = { x: 2, y: 1, z: 1, scale: 0.5 };
-        console.log("2: ", this.spherePosition)
+      } else if (scrollTop > containerHeight && scrollTop < (containerHeight * 2)) {
+        this.text = { refresh: true };
+        this.spherePosition = { x: -2, y: 0, z: 1, scale: 1 };
       }
     })
   }
@@ -92,10 +103,13 @@ export default {
       width: 95vw;
       max-width: 100%;
       text-align: center;
-      margin: auto;
+      margin: 2rem auto;
       background-color: transparent;
       scroll-snap-align: start;
       padding: var(--space-10) 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
     }
   }  
 }
@@ -103,10 +117,30 @@ export default {
 .signature {
   position: fixed;
   bottom: 1.5rem;
-  left: 4rem;
+  left: 0;
+  right: 0;
+  margin: auto;
+  padding: 0 2.4rem .4rem 2.4rem;
   font-size: 14px;
   color: var(--blue);
   margin-right: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: calc(100vw - 2.4rem);
+  z-index: 10;
+
+  & svg {
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    color: #0077B5;
+
+    &:hover {
+      transform: translateY(-5px);
+      color: #005e91;
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -126,6 +160,9 @@ export default {
     right: 0;
     padding: 0 2rem;
     text-align: center;
+    font-size: 12px;
+    flex-direction: column;
+    align-items: center;
   }
 }
 </style>

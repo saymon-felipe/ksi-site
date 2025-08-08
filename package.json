@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
+    "@fortawesome/free-brands-svg-icons": "^7.0.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
     "@fortawesome/vue-fontawesome": "^3.1.1",
     "gsap": "^3.13.0",
     "lottie-web": "^5.13.0",
+    "maska": "^3.2.0",
     "scrollreveal": "^4.0.9",
     "three": "^0.177.0",
     "three.meshline": "^1.4.0",

@@ -1,42 +1,41 @@
 <template>
-    <section id="clientes">
-        <div class="carrossel glass" v-scroll-reveal="{ delay: 700, origin: 'bottom', container: '.app-box-content' }">
-            <div class="carousel-slides-container" :style="{ transform: `translateX(${slideTranslateX})` }">
-                <a 
-                    :href="cliente.link" 
-                    target="_blank" 
-                    v-for="(cliente, index) in clientes" 
-                    :key="index"
-                >
-                    <div class="glass float icone">
-                        <img :src="cliente.icone" loading="lazy" />
-                    </div>
-                    <div class="image-container">
-                        <img :src="cliente.imagem" class="imagem"  loading="lazy" :alt="cliente.nome" />
-                    </div>
-                </a>
-            </div>
-
-            <div class="dots-container">
-                <span 
-                    v-for="(cliente, index) in clientes" 
-                    :key="index"
-                    :class="{ 'dot': true, 'active': index === currentSlideIndex }"
-                    @click="jumpToSlide(index)"
-                ></span>
-            </div>
-
-            <div class="responsive-navigation-buttons">
-                <button class="glass button" v-on:click="prevSlide()">
-                    <font-awesome-icon icon="angle-left" />
-                </button>
-                <button class="glass button" v-on:click="nextSlide()">
-                    <font-awesome-icon icon="angle-right" />
-                </button>
-            </div>
-            <div ref="lottieContainer2" class="glass button" id="lottieContainer2"></div>
+    <div class="carrossel glass" v-scroll-reveal="{ delay: 700, origin: 'bottom', container: '.app-box-content' }">
+        <div class="carousel-slides-container" :style="{ transform: `translateX(${slideTranslateX})` }">
+            <a 
+                :href="cliente.link" 
+                target="_blank" 
+                v-for="(cliente, index) in clientes" 
+                :key="index"
+                class="hover"
+            >
+                <div class="glass float icone">
+                    <img :src="cliente.icone" loading="lazy" />
+                </div>
+                <div class="image-container">
+                    <img :src="cliente.imagem" class="imagem"  loading="lazy" :alt="cliente.nome" />
+                </div>
+            </a>
         </div>
-    </section>
+
+        <div class="dots-container">
+            <span 
+                v-for="(cliente, index) in clientes" 
+                :key="index"
+                :class="{ 'dot': true, 'active': index === currentSlideIndex }"
+                @click="jumpToSlide(index)"
+            ></span>
+        </div>
+
+        <div class="responsive-navigation-buttons">
+            <button class="glass button" v-on:click="prevSlide()">
+                <font-awesome-icon icon="angle-left" />
+            </button>
+            <button class="glass button" v-on:click="nextSlide()">
+                <font-awesome-icon icon="angle-right" />
+            </button>
+        </div>
+        <div ref="lottieContainer2" class="glass button" id="lottieContainer2"></div>
+    </div>
 </template>
 <script>
 import lottie from "lottie-web";
@@ -186,7 +185,8 @@ export default {
 
 .carrossel {
     width: calc(100% - 50px);
-    height: 65vh;
+    flex-grow: 1;
+    min-height: 0;
     margin: auto;
     overflow: hidden;
     border-radius: 2rem;
