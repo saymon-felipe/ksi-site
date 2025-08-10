@@ -32,10 +32,11 @@
                         </div>
                         <div class="video-track glass">
                             <div class="custom-range-wrapper" ref="rangeWrapperRef" @mousedown="handleMouseDown">
-                            <div class="custom-range-track">
-                                <div class="custom-range-fill" :style="{ width: progress + '%' }"></div>
-                            </div>
-                            <div class="custom-range-thumb" :style="{ left: `calc(${progress}% - 10px)` }"></div>
+                                <div class="custom-range-track">
+                                    <div class="custom-range-buffer" :style="{ width: bufferProgress + '%' }"></div>
+                                    <div class="custom-range-fill" :style="{ width: progress + '%' }"></div>
+                                </div>
+                                <div class="custom-range-thumb" :style="{ left: `calc(${progress}% - 10px)` }"></div>
                             </div>
                         </div>
                         <div class="fullscreen glass">
@@ -92,10 +93,20 @@ export default {
             progress: 0,
             videoDuration: 0,
             isDragging: false,
-            hideControlsTimer: null
+            hideControlsTimer: null,
+            bufferProgress: 0
         }
     },
     methods: {
+        updateBufferProgress() {
+            if (this.$refs.video && this.$refs.video.duration > 0) {
+                const buffered = this.$refs.video.buffered;
+                if (buffered.length > 0) {
+                    // Pega o final do primeiro (e único) trecho carregado
+                    this.bufferProgress = (buffered.end(0) / this.$refs.video.duration) * 100;
+                }
+            }
+        },
         hideControls: function() {
             if (this.$refs.controls) {
                 this.$refs.controls.style.opacity = 0;
@@ -267,6 +278,8 @@ export default {
             this.$refs.video.currentTime = 0;
         });
 
+        this.$refs.video.addEventListener('progress', this.updateBufferProgress);
+
         document.addEventListener('mouseup', this.handleMouseUp);
 
         if (this.$refs.videoContainer) {
@@ -279,7 +292,12 @@ export default {
         if (this.$refs.videoContainer) {
             this.$refs.videoContainer.removeEventListener('mousemove', this.handleMouseMoveOnVideo);
         }
+
         clearTimeout(this.hideControlsTimer);
+
+        if (this.$refs.video) {
+            this.$refs.video.removeEventListener('progress', this.updateBufferProgress);
+        }
     }
 }
 </script>
@@ -387,6 +405,7 @@ export default {
         justify-content: center;
         gap: var(--space-6);
         transition: opacity 0.4s ease-in-out;
+        padding: 0 var(--space-4);
     }
 }
 
@@ -490,5 +509,42 @@ export default {
     align-items: center;
     gap: var(--space-3);
     line-height: 110%;
+}
+
+.video-track .custom-range-track {
+    /* Mantenha o background para a parte não carregada */
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: #ccc;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.video-track .custom-range-buffer {
+    /* A nova barra de buffer */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%; /* Será controlado pelo JS */
+    height: 100%;
+    background-color: #a0a0a0; /* Uma cor cinza mais escura */
+    z-index: 1; /* Garante que fique abaixo do 'fill' */
+}
+
+/* O preenchimento do vídeo */
+.video-track .custom-range-fill {
+    position: absolute; /* Torna-o absoluto para ficar acima do buffer */
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #1a4d7d;
+    border-radius: 3px;
+    z-index: 2; /* Fica acima do buffer */
+}
+
+.video-track .custom-range-wrapper {
+    height: 8px;
 }
 </style>
