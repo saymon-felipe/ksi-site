@@ -86,7 +86,7 @@ export default {
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 11;
+    z-index: 12;
     height: 100%;
     width: 100%;
     position: absolute;

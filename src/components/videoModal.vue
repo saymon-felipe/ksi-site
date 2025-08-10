@@ -329,7 +329,7 @@ export default {
     place-items: center;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(4px);
-    z-index: 90;
+    z-index: 999;
     transition: opacity 0.4s ease-in-out;
     opacity: 0;
     display: none;
@@ -481,6 +481,30 @@ export default {
     grid-area: stats;
 }
 
+@media (pointer: coarse) {
+    .volume-container {
+        display: none;
+    }
+
+    .play-volume {
+        & button {
+            margin: 0 !important;
+        }
+    }
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+    .video-wrapper {
+        width: initial !important;
+        height: 70vh;
+        margin: auto;
+    }
+
+    .modal-wrapper {
+        height: 60vh;
+    }
+}
+
 /* Media query para telas menores que 768px */
 @media (max-width: 768px) {
     .video-data-container {
@@ -502,13 +526,23 @@ export default {
     .video-data-container > .video-statistics {
         justify-self: start;
     }
+
+    .volume-container {
+        display: none;
+    }
+
+    .play-volume {
+        & button {
+            margin: 0 !important;
+        }
+    }
 }
 
 .user, .views, .video-statistics {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    line-height: 110%;
+    line-height: 130%;
 }
 
 .video-track .custom-range-track {

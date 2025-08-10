@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="videos-catalog" v-scroll-reveal="{ delay: 500, origin: 'bottom', container: '.app-box-content' }">
-            <p class="primary-font" v-if="filteredResults.length > 0 && searchString != ''">{{ filteredResults.length }} resultados</p>
+            <p class="primary-font" v-if="filteredResults.length > 0">{{ filteredResults.length }} resultados</p>
             <div class="videos-container float">
                 <div class="video glass hover" v-for="(video, index) in filteredResults" :key="index" v-on:click="showVideo(video)">
                     <img :src="video.thumbnail" loading="lazy" :alt="video.title">
@@ -130,6 +130,8 @@ export default {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    position: relative;
+    z-index: 1;
 
     & > p {
         margin-bottom: var(--space-4);
@@ -216,6 +218,12 @@ export default {
         display: flex;
         align-items: center;
         gap: var(--space-1);
+    }
+}
+
+@media (max-width: 768px) {
+    .search {
+        flex-direction: column;
     }
 }
 </style>
