@@ -5,7 +5,7 @@
                 <li><a href="#clientes">Clientes</a></li>
                 <li><a href="#servicos">Serviços</a></li>
                 <li>Sobre nós</li>
-                <li>KSI LAB</li>
+                <li><a href="#ksi-lab">KSI LAB</a></li>
             </ul>
         </nav>
         <div class="logo">
@@ -23,20 +23,20 @@
             <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
             <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
         </div>
-        <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
-        <div class="responsive-menu glass" :class="menuState">
-            <ul>
-                <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
-                <li><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
-                <li>Sobre nós</li>
-                <li>KSI LAB</li>
-                <li>
-                    <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
-                    <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
-                </li>
-            </ul>
-        </div>
     </header>
+    <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
+    <div class="responsive-menu glass" :class="menuState">
+        <ul>
+            <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
+            <li><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
+            <li>Sobre nós</li>
+            <li><a href="#ksi-lab" v-on:click="showMenu = false">KSI LAB</a></li>
+            <li>
+                <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
+                <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
+            </li>
+        </ul>
+    </div>
 </template>
 <script>
 export default {
@@ -77,6 +77,10 @@ ul {
     }
 }
 
+* {
+    font-family: Ethnocentric;
+}
+
 header {
     position: fixed;
     width: calc(100vw - 2.4rem);
@@ -90,172 +94,172 @@ header {
     height: 84px;
     backdrop-filter: blur(5px);
     z-index: 9;
+}
 
-    & nav {
-        position: relative;
-        z-index: 2;
-        display: grid;
-        place-items: center;
-        width: 100%;
+nav {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.right-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-6);
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+}
+
+a {
+    padding: 0;
+    line-height: 83%;
+    color: var(--black);
+
+    &:hover, &.active {
+        background: none;
+        color: var(--blue);
+    }
+
+    & img {
+        width: 100px;
+        height: 32.61px;
+        cursor: pointer;
+    }
+}
+
+.logo {
+    background: #dde8f0;
+    width: 25.5%;
+    min-width: 200px;
+    display: flex;
+    justify-content: center;
+    padding-bottom: var(--space-6);
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    margin: auto;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -44px;
+        width: 45px;
         height: 100%;
+        background-color: #ACC4D7; /* Cor mais escura para o chanfro */
+        transform: skewX(39deg); /* Ângulo para o chanfro esquerdo */
+        transform-origin: top left;
     }
 
-    & .right-content {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: var(--space-6);
-        position: relative;
-        z-index: 2;
-        width: 100%;
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: -44px; /* Ajuste para o ângulo */
+        width: 45px;
         height: 100%;
+        background-color: #ACC4D7; /* Cor mais escura para o chanfro */
+        transform: skewX(-39deg); /* Ângulo para o chanfro esquerdo */
+        transform-origin: top left;
     }
 
-    & a {
-        padding: 0;
-        line-height: 83%;
-        color: var(--black);
-
-        &:hover, &.active {
-            background: none;
-            color: var(--blue);
-        }
-
-        & img {
-            width: 100px;
-            height: 32.61px;
-            cursor: pointer;
-        }
-    }
-
-    & .logo {
-        background: #dde8f0;
-        width: 25.5%;
-        min-width: 200px;
-        display: flex;
-        justify-content: center;
-        padding-bottom: var(--space-6);
+    & .corner-suavization-bottom-left, & .corner-suavization-bottom-right {
+        width: calc(100% - 90px);
+        height: 100%;
         position: absolute;
         left: 0;
         right: 0;
-        z-index: 1;
         margin: auto;
 
         &::before {
-            content: '';
+            content: "";
+            background: #ACC4D7;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
             position: absolute;
-            top: 0;
-            left: -44px;
-            width: 45px;
-            height: 100%;
-            background-color: #ACC4D7; /* Cor mais escura para o chanfro */
-            transform: skewX(39deg); /* Ângulo para o chanfro esquerdo */
-            transform-origin: top left;
+            bottom: -10px;
+            left: -10px;
         }
 
         &::after {
-            content: '';
+            content: "";
+            background: #dde8f0;
+            border-radius: 16px;
+            transform: skewX(39deg);
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            bottom: 0;
+            left: -8px;
+        }
+    }
+
+    & .corner-suavization-bottom-right {
+        &::before {
+            right: -10px;
+            left: initial;
+        }
+
+        &::after {
+            transform: skewX(-39deg);
+            right: -8px;
+            left: initial;
+        }
+    }
+
+    & .corner-suavization-top-left, & .corner-suavization-top-right {
+        width: calc(100% - 90px);
+        height: 100%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: auto;
+
+        &::before {
+            content: "";
+            background: #ACC4D7;
+            border-radius: 113px;
+            width: 43px;
+            height: 40px;
             position: absolute;
             top: 0;
-            right: -44px; /* Ajuste para o ângulo */
-            width: 45px;
-            height: 100%;
-            background-color: #ACC4D7; /* Cor mais escura para o chanfro */
-            transform: skewX(-39deg); /* Ângulo para o chanfro esquerdo */
-            transform-origin: top left;
+            left: -69px;
+            z-index: 2;
+            transform: skewX(34deg);
         }
 
-        & .corner-suavization-bottom-left, & .corner-suavization-bottom-right {
-            width: calc(100% - 90px);
-            height: 100%;
+        &::after {
+            content: "";
+            background: #dde8f0;
+            border-radius: 50%;
+            width: 40px;
+            height: 30px;
             position: absolute;
-            left: 0;
-            right: 0;
-            margin: auto;
+            top: -7px;
+            left: -65px;
+            z-index: 1;
+        }
+    }
 
-            &::before {
-                content: "";
-                background: #ACC4D7;
-                border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                position: absolute;
-                bottom: -10px;
-                left: -10px;
-            }
-
-            &::after {
-                content: "";
-                background: #dde8f0;
-                border-radius: 16px;
-                transform: skewX(39deg);
-                width: 20px;
-                height: 20px;
-                position: absolute;
-                bottom: 0;
-                left: -8px;
-            }
+    & .corner-suavization-top-right {
+        &::before {
+            left: initial;
+            right: -69px;
+            transform: skewX(-34deg);
         }
 
-        & .corner-suavization-bottom-right {
-            &::before {
-                right: -10px;
-                left: initial;
-            }
-
-            &::after {
-                transform: skewX(-39deg);
-                right: -8px;
-                left: initial;
-            }
-        }
-
-        & .corner-suavization-top-left, & .corner-suavization-top-right {
-            width: calc(100% - 90px);
-            height: 100%;
-            position: absolute;
-            left: 0;
-            right: 0;
-            margin: auto;
-
-            &::before {
-                content: "";
-                background: #ACC4D7;
-                border-radius: 113px;
-                width: 43px;
-                height: 40px;
-                position: absolute;
-                top: 0;
-                left: -69px;
-                z-index: 2;
-                transform: skewX(34deg);
-            }
-
-            &::after {
-                content: "";
-                background: #dde8f0;
-                border-radius: 50%;
-                width: 40px;
-                height: 30px;
-                position: absolute;
-                top: -7px;
-                left: -65px;
-                z-index: 1;
-            }
-        }
-
-        & .corner-suavization-top-right {
-            &::before {
-                left: initial;
-                right: -69px;
-                transform: skewX(-34deg);
-            }
-
-            &::after {
-                left: initial;
-                right: -65px;
-            }
+        &::after {
+            left: initial;
+            right: -65px;
         }
     }
 }
@@ -278,19 +282,18 @@ header {
     top: 0;
     left: 0;
     background: transparent;
-    z-index: 11;
+    z-index: 12;
 }
 
 .responsive-menu {
-    z-index: 12;
+    z-index: 20;
     width: calc(100vw - 2.4rem);
     position: absolute;
     max-height: 300px;
     height: fit-content;
-    top: 216px;
+    top: 60px;
     left: 0;
     right: 0;
-    bottom: 0;
     margin: auto;
     padding: 2rem;
     place-items: start;

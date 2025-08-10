@@ -6,6 +6,7 @@
       <heroComponent></heroComponent>
       <customersComponent></customersComponent>
       <servicesComponent></servicesComponent>
+      <ksiTubeComponent></ksiTubeComponent>
     </div>
 
     <ThreeDScene :spherePosition="spherePosition" :text="text" />
@@ -25,6 +26,7 @@ import headerComponent from "./components/headerComponent.vue";
 import heroComponent from "./components/heroComponent.vue";
 import customersComponent from "./components/customersComponent.vue";
 import servicesComponent from "./components/servicesComponent.vue";
+import ksiTubeComponent from "./components/ksiTubeComponent.vue";
 
 export default {
   name: 'App', // Nome do componente principal
@@ -33,7 +35,8 @@ export default {
     headerComponent,
     heroComponent,
     customersComponent,
-    servicesComponent
+    servicesComponent,
+    ksiTubeComponent
   },
   data() {
     return {
@@ -55,9 +58,12 @@ export default {
       } else if (scrollTop < (containerHeight + (containerHeight / 2))) { //segunda sessão
         this.text = { refresh: true };
         this.spherePosition = { x: 2, y: 1, z: 1, scale: 0.5 };
-      } else if (scrollTop > containerHeight && scrollTop < (containerHeight * 2)) {
+      } else if (scrollTop >= (containerHeight + (containerHeight / 2)) && scrollTop < (containerHeight + (containerHeight * 2))) {
         this.text = { refresh: true };
         this.spherePosition = { x: -2, y: 0, z: 1, scale: 1 };
+      } else if (scrollTop >= (containerHeight * 2)) {
+        this.text = { refresh: true };
+        this.spherePosition = { x: 0, y: -2.7, z: 1, scale: 1 };
       }
     })
   }
@@ -80,7 +86,7 @@ export default {
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 3;
+    z-index: 11;
     height: 100%;
     width: 100%;
     position: absolute;
