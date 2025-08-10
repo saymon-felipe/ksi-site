@@ -360,6 +360,8 @@ export default {
 
 .modal-body {
     width: 100%;
+    max-width: 65vw;
+    margin: auto;
     height: 100%;
     border-radius: 1.5rem;
     overflow-y: auto;
@@ -505,6 +507,26 @@ export default {
     }
 }
 
+@media (pointer: coarse) {
+    .video-wrapper {
+        width: initial !important;
+        margin: auto;
+    }
+
+    .modal-wrapper {
+        height: 90vh;
+        top: 3vh;
+    }
+
+    .modal-body {
+        max-width: 100% !important;
+    }
+
+    .close-modal {
+        z-index: 10;
+    }
+}
+
 /* Media query para telas menores que 768px */
 @media (max-width: 768px) {
     .video-data-container {
@@ -535,6 +557,10 @@ export default {
         & button {
             margin: 0 !important;
         }
+    }
+
+    .modal-body {
+        max-width: 100% !important;
     }
 }
 
