@@ -71,6 +71,34 @@
                         </button>
                     </div>
                 </div>
+                <div class="video-comments-container">
+                    <p class="primary-font">{{ comments?.length }} {{ comments?.length == 1 ? "comentário" : "comentários" }}</p>
+                    <div class="form-group textarea">
+                        <textarea id="post-comment" placeholder="" v-model="commentText"></textarea>
+                        <div class="send-comment-container" v-on:click="sendComment()">
+                            <font-awesome-icon icon="share" />
+                        </div>
+                        <label for="post-comment">Escreva um comentário</label>
+                    </div>
+                    <div class="comments-list">
+                        <div class="user" v-for="(user, index) in comments?.comments" :key="index">
+                            <div class="avatar primary-font" :style="'background: ' + user.background + '; color: ' + calculateContrastColor(user.background)">
+                                <h2>{{ getFirstLetter(user.userName) }}</h2>
+                            </div>
+                            <div class="user-comments-container secondary-font">
+                                <div class="user-comment glass" :style="'background: ' + comment.background" v-for="(comment, index2) in user.comments" :key="index2">
+                                    <div class="comment-header">
+                                        <span>@{{ user.userName }}</span>
+                                        <span>{{ formatRelativeDate(comment.date) }}</span>
+                                    </div>
+                                    <div class="comment-body">
+                                        <span>{{ comment.comment }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -94,10 +122,15 @@ export default {
             videoDuration: 0,
             isDragging: false,
             hideControlsTimer: null,
-            bufferProgress: 0
+            bufferProgress: 0,
+            comments: null,
+            commentText: ""
         }
     },
     methods: {
+        getFirstLetter: function (string) {
+            return string && string.length > 0 ? string[0] : "";
+        },
         updateBufferProgress() {
             if (this.$refs.video && this.$refs.video.duration > 0) {
                 const buffered = this.$refs.video.buffered;
@@ -201,6 +234,57 @@ export default {
             this.isDragging = false;
             document.removeEventListener('mousemove', this.handleMouseMove);
             document.removeEventListener('mouseup', this.handleMouseUp);
+        },
+        getVideoComments: function () {
+            let videoComments = {
+                length: 2,
+                comments: [
+                    {
+                        id: 0,
+                        userName: "C1berBolt1Ɛ",
+                        background: "#1E65C2",
+                        comments: [
+                            {
+                                date: "2025-08-09 17:28:39",
+                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
+                                background: "rgba(184, 193, 255, 0.3)"
+                            },
+                            {
+                                date: "2025-08-09 17:28:39",
+                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
+                                background: "rgba(184, 193, 255, 0.3)"
+                            },
+                            {
+                                date: "2025-08-09 17:28:39",
+                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
+                                background: "rgba(184, 193, 255, 0.3)"
+                            }
+                        ]
+                    },
+                    {
+                        id: 1,
+                        userName: "CristIn4S4fadinha",
+                        background: "#C21EB1",
+                        comments: [
+                            {
+                                date: "2025-08-09 17:28:39",
+                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
+                                background: "rgba(255, 161, 249, 0.3)"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            this.comments = videoComments;
+        },
+        sendComment: function () {
+            if (this.commentText.trim().length == 0) return;
+
+            console.log(this.commentText)
+            this.commentText = "";
+
+            this.getVideoComments();
         }
     },
     watch: {
@@ -265,6 +349,8 @@ export default {
         }
     },
     mounted: function () {
+        this.getVideoComments();
+
         this.lottieAnimation = lottie.loadAnimation({
             container: this.$refs.videoloadingAnimation,
             renderer: "svg",
@@ -365,6 +451,7 @@ export default {
     height: 100%;
     border-radius: 1.5rem;
     overflow-y: auto;
+    overflow-x: hidden;
     transition: opacity 0.4s ease-in-out;
 }
 
@@ -483,18 +570,6 @@ export default {
     grid-area: stats;
 }
 
-@media (pointer: coarse) {
-    .volume-container {
-        display: none;
-    }
-
-    .play-volume {
-        & button {
-            margin: 0 !important;
-        }
-    }
-}
-
 @media (pointer: coarse) and (orientation: landscape) {
     .video-wrapper {
         width: initial !important;
@@ -508,6 +583,16 @@ export default {
 }
 
 @media (pointer: coarse) {
+    .volume-container {
+        display: none;
+    }
+
+    .play-volume {
+        & button {
+            margin: 0 !important;
+        }
+    }
+
     .video-wrapper {
         width: initial !important;
         margin: auto;
@@ -524,6 +609,15 @@ export default {
 
     .close-modal {
         z-index: 10;
+    }
+
+    .controls {
+        transform: scale(0.8);
+
+        & .play-volume, & .fullscreen {
+            min-width: 60px;
+            width: 90px;
+        }
     }
 }
 
@@ -606,5 +700,117 @@ export default {
 
 .video-track .custom-range-wrapper {
     height: 8px;
+}
+
+@media (max-width: 768px) {
+    .video-statistics {
+        width: 100%;
+
+        & button {
+            width: 100%;
+        }
+    }
+}
+</style>
+<style scoped>
+.video-comments-container {
+    padding: 0 var(--space-8);
+    margin-top: var(--space-10);
+}
+
+.textarea {
+    position: relative;
+
+    & .send-comment-container {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        font-size: 1.7rem;
+        color: #303030;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        width: 60px;
+
+        &:hover svg {
+            color: black;
+        }
+    }
+}
+
+.comments-list {
+    margin-top: var(--space-10);
+}
+
+.user {
+    margin: var(--space-6) 0;
+    display: flex;
+    align-items: start;
+    gap: var(--space-6);
+    position: relative;
+
+    & .avatar {
+        display: grid;
+        place-items: center;
+    }
+}
+
+.user-comments-container {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.user-comment {
+    padding: var(--space-5);
+    border-radius: 5px 1rem 1rem 1rem;
+    display: grid;
+    gap: var(--space-4);
+}
+
+.comment-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.1rem;
+}
+
+.comment-body {
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .send-comment-container {
+        font-size: 1.3rem;
+    }
+
+    .video-comments-container {
+        padding: 0 var(--space-3);
+    }
+
+    .comment-header {
+        flex-direction: column;
+        align-items: start;
+        gap: var(--space-3);
+    }
+
+    textarea:focus ~ label,
+    textarea:not(:placeholder-shown):valid ~ label,
+    textarea:not(:placeholder-shown):invalid ~ label {
+        display: none;
+    }
+
+    .comments-list .avatar {
+        position: absolute;
+        z-index: 3;
+        top: 17px;
+        left: 17px;
+    }
+
+    .user .user-comment:first-child .comment-header {
+        margin-left: 60px;
+    }
 }
 </style>

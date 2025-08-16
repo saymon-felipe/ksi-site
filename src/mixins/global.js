@@ -94,6 +94,15 @@ export default {
         },
         formatRelativeDate: function (date) {
             return moment(date).fromNow();
+        },
+        calculateContrastColor(hexColor) {
+            let r = parseInt(hexColor.slice(1, 3), 16);
+            let g = parseInt(hexColor.slice(3, 5), 16);
+            let b = parseInt(hexColor.slice(5, 7), 16);
+
+            let luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+            return luminance > 0.5 ? "#000000" : "#FFFFFF";
         }
     },
     mounted: function () {

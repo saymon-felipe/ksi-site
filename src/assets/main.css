@@ -50,6 +50,7 @@ a {
   text-decoration: none;
   transition: 0.4s;
   padding: 3px;
+  font-size: 12px;
 
   &:hover {
     background: transparent !important;
@@ -80,7 +81,7 @@ a {
 
   &:hover {
     color: #73c2ff;
-    background: white;
+    background: white !important;
     transform: translateY(-5px);
   }
 }
@@ -185,6 +186,10 @@ textarea {
 .avatar {
   width: 50px;
   height: 50px;
+  min-width: 50px;
+  min-height: 50px;
+  max-width: 50px;
+  max-height: 50px;
   object-fit: cover;
   border-radius: 50%;
   border: 2px solid var(--white);
@@ -234,19 +239,29 @@ textarea {
       background: rgba(23, 81, 126, 0.2);
     }
   }
+}
 
+@media (min-width: 685px) {
   h1 {
     font-size: 2.3rem !important;
   }
 }
 
-@media (max-width: 468px) {
+@media (max-width: 685px) {
   h1 {
     font-size: 1.9rem !important;
   }
+}
 
+@media (max-width: 468px) {
   .two-inputs {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 370px) {
+  h1 {
+    font-size: 1.5rem !important;
   }
 }
 

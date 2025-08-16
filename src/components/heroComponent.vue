@@ -219,5 +219,9 @@ export default {
             transform: translateX(15px);
         }
     }
+
+    .hero-buttons {
+        margin-top: var(--space-5);
+    }
 }
 </style>

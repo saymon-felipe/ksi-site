@@ -127,7 +127,7 @@ export default {
   right: 0;
   margin: auto;
   padding: 0 2.4rem .4rem 2.4rem;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--blue);
   margin-right: var(--space-6);
   display: flex;

@@ -282,7 +282,7 @@ a {
     top: 0;
     left: 0;
     background: transparent;
-    z-index: 12;
+    z-index: 13;
 }
 
 .responsive-menu {

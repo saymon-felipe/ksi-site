@@ -159,6 +159,8 @@ export default {
 
     & img {
         width: 100%;
+        min-height: 173.25px;
+        background-color: white;
         object-fit: contain;
         border-radius: var(--radius-lg);
     }
