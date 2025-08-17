@@ -44,7 +44,7 @@
                     <textarea id="obs" placeholder="" v-model="obs" required></textarea>
                     <label for="obs">Conte-nos sobre sua ideia</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Soliçitar orçamento</button>
+                <button type="submit" class="btn btn-primary" :class="loading ? 'btn-loading' : ''">{{ textButton }}</button>
             </form>
         </div>
         <div class="obrigado float text-center" :class="thanks ? 'show' : 'hide'">
@@ -67,7 +67,10 @@ export default {
             name: "",
             email: "",
             tel: "",
-            obs: ""
+            obs: "",
+            loading: false,
+            textButton: "Soliçitar orçamento",
+            requestType: ""
         }
     },
     mounted: function () {
@@ -89,17 +92,30 @@ export default {
                 requestType: this.requestType
             }
 
-            console.log("data: ", data);
+            let self = this;
 
-            this.list = false;
-            this.form = false;
-            this.thanks = true;
+            self.loading = true;
+            self.textButton = "Enviando contato";
 
-            setTimeout(() => {
-                this.list = true;
-                this.form = false;
-                this.thanks = false;
-            }, 10 * 1000)
+            this.api.post("utils/contact", data).then(() => {
+                self.loading = false;
+                self.textButton = "Contato enviado";
+                self.list = false;
+                self.form = false;
+                self.thanks = true;
+
+                setTimeout(() => {
+                    self.list = true;
+                    self.form = false;
+                    self.thanks = false;
+                    self.textButton = "Soliçitar orçamento";
+                    self.name = "";
+                    self.email = "";
+                    self.tel = "";
+                    self.obs = "";
+                    self.requestType = "";
+                }, 10 * 1000)
+            })            
         },
         select: function (type) {
             this.list = false;
