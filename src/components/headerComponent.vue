@@ -20,10 +20,19 @@
         <div>&nbsp;</div>
         <font-awesome-icon icon="bars" class="menu-responsive-button" v-on:click="showMenu = !showMenu" />
         <div class="right-content menu" v-scroll-reveal="{ delay: 500, origin: 'top' }">
-            <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
-            <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
+            <GoogleLogin :callback="handleLoginSuccess" v-if="$usuario.id == null">
+                <button class="btn btn-primary" >Entrar</button>
+            </GoogleLogin>
+            <div class="user" v-else v-on:click="loginContainer = !loginContainer">
+                <img :src="$usuario.imagem" :alt="$usuario.nome" class="avatar"></img>
+                <span class="secondary-font">{{ $usuario.nome }}</span>
+            </div>
         </div>
     </header>
+    <div class="login-container glass hover" v-if="loginContainer">
+        <span v-on:click="logout()">Sair</span>
+    </div>
+    <div class="login-wrapper" v-on:click="loginContainer = false" v-if="loginContainer"></div>
     <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
     <div class="responsive-menu glass" :class="menuState">
         <ul>
@@ -32,18 +41,26 @@
             <li>Sobre nós</li>
             <li><a href="#ksi-lab" v-on:click="showMenu = false">KSI LAB</a></li>
             <li>
-                <a href="https://app.rabsystems.com.br/login" target="_blank">Login</a>
-                <button onclick="window.open('https://app.rabsystems.com.br/register')" class="btn btn-primary">Cadastre-se</button>
+                <GoogleLogin :callback="handleLoginSuccess" v-if="$usuario.id == null">
+                    <button class="btn btn-primary" >Entrar</button>
+                </GoogleLogin>
+                <div class="user" v-else>
+                    <img :src="$usuario.imagem" :alt="$usuario.nome" class="avatar"></img>
+                    <span class="secondary-font">{{ $usuario.nome }}</span>
+                </div>
             </li>
         </ul>
     </div>
 </template>
 <script>
+import { GoogleLogin } from 'vue3-google-login';
+
 export default {
     data() {
         return {
             showMenu: false,
-            menuState: ""
+            menuState: "",
+            loginContainer: false
         }
     },
     watch: {
@@ -58,8 +75,40 @@ export default {
             immediate: false
         }
     },
+    methods: {
+        handleLoginSuccess(response) {
+            let self = this;
+
+            this.api.post("users/login", { token: response.code }).then((results) => {
+                Object.assign(self.$usuario, results.data.returnObj);
+            })
+        },
+        getUser: function () {
+            let self = this;
+
+            this.api.get("users").then((results) => {
+                Object.assign(self.$usuario, results.data.returnObj);
+            })
+        },
+        logout: function () {
+            let self = this;
+
+            this.api.get("users/logout").then(() => {
+                const estadoInicial = { 
+                    id: null,
+                    email: "",
+                    imagem: "",
+                    nome: ""
+                };
+                
+                Object.assign(this.$usuario, estadoInicial);
+
+                self.loginContainer = false;
+            })
+        }
+    },
     mounted() {
-        
+        this.getUser();
     }
 }
 </script>
@@ -108,10 +157,9 @@ nav {
 .right-content {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-6);
+    justify-content: flex-end;
     position: relative;
+    padding: var(--space-6);
     z-index: 2;
     width: 100%;
     height: 100%;
@@ -264,6 +312,12 @@ a {
     }
 }
 
+.user {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
 .menu-responsive-button {
     display: none;
     z-index: 10;
@@ -275,7 +329,7 @@ a {
     z-index: 12;
 }
 
-.responsive-menu-wrapper {
+.responsive-menu-wrapper, .login-wrapper {
     width: 100vw;
     height: 100vh;
     position: fixed;
@@ -426,5 +480,19 @@ a {
             }
         }
     }
+}
+</style>
+<style scoped>
+.user {
+    cursor: pointer;
+}
+
+.login-container {
+    position: absolute;
+    right: 2rem;
+    top: 5rem;
+    padding: 1rem;
+    cursor: pointer;
+    z-index: 14;
 }
 </style>
