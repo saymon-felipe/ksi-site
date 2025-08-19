@@ -2,7 +2,7 @@ import axios from 'axios';
 
 let url_api;
 
-const dev_environment = "http://192.168.15.7:3000/"; // Ambiente de desenvolvimento.
+const dev_environment = "http://192.168.15.8:3000/"; // Ambiente de desenvolvimento.
 const prod_environment = ""; // Ambiente de teste.
 
 // Detecta ambiente automaticamente

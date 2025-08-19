@@ -4,7 +4,7 @@
             <ul>
                 <li><a href="#clientes">Clientes</a></li>
                 <li><a href="#servicos">Serviços</a></li>
-                <li>Sobre nós</li>
+                <li v-if="false">Sobre nós</li>
                 <li><a href="#ksi-lab">KSI LAB</a></li>
             </ul>
         </nav>
@@ -38,7 +38,7 @@
         <ul>
             <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
             <li><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
-            <li>Sobre nós</li>
+            <li v-if="false">Sobre nós</li>
             <li><a href="#ksi-lab" v-on:click="showMenu = false">KSI LAB</a></li>
             <li>
                 <GoogleLogin :callback="handleLoginSuccess" v-if="$usuario.id == null">

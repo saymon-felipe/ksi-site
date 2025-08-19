@@ -2,6 +2,7 @@ import './assets/main.css'
 
 import { createApp, reactive } from 'vue'
 import App from './App.vue'
+import router from './router'
 import { vScrollReveal } from './directives/scrollReveal';
 import { vMaska } from 'maska/vue';
 
@@ -25,6 +26,7 @@ app.directive('maska', vMaska);
 app.mixin(globalMixin);
 
 app.use(api);
+app.use(router);
 
 app.use(vue3GoogleLogin, {
     clientId: "12518031078-ahn0romctaqfjr4gogivjnfe944qhq5q.apps.googleusercontent.com"
