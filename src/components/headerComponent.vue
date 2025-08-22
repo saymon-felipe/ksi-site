@@ -1,21 +1,19 @@
 <template>
     <header>
-        <nav v-scroll-reveal="{ delay: 500, origin: 'top' }" class="menu">
+        <nav v-scroll-reveal="{ delay: 500, origin: 'top' }" class="menu" :style="'visibility: ' + (!isAdmin ? 'initial' : 'hidden') + ';'">
             <ul>
                 <li><a href="#clientes">Clientes</a></li>
                 <li><a href="#servicos">Serviços</a></li>
                 <li v-if="false">Sobre nós</li>
                 <li><a href="#ksi-lab">KSI LAB</a></li>
             </ul>
-        </nav>
+        </nav> 
         <div class="logo">
             <div class="corner-suavization-bottom-left"></div>
             <div class="corner-suavization-bottom-right"></div>
             <div class="corner-suavization-top-left"></div>
             <div class="corner-suavization-top-right"></div>
-            <a href="#hero">
-                <img src="../assets/img/ksi.png" v-scroll-reveal="{ delay: 500, origin: 'top' }" loading="lazy" alt="KSI - Kinetic Solutions"></img>
-            </a>
+            <img src="../assets/img/ksi.png" v-on:click="goToHome()" v-scroll-reveal="{ delay: 500, origin: 'top' }" loading="lazy" alt="KSI - Kinetic Solutions"></img>
         </div>
         <div>&nbsp;</div>
         <font-awesome-icon icon="bars" class="menu-responsive-button" v-on:click="showMenu = !showMenu" />
@@ -36,10 +34,10 @@
     <div class="responsive-menu-wrapper" v-on:click="showMenu = false" v-if="showMenu"></div>
     <div class="responsive-menu glass" :class="menuState">
         <ul>
-            <li><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
-            <li><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
-            <li v-if="false">Sobre nós</li>
-            <li><a href="#ksi-lab" v-on:click="showMenu = false">KSI LAB</a></li>
+            <li :style="'visibility: ' + (!isAdmin ? 'initial' : 'hidden') + ';'"><a href="#clientes" v-on:click="showMenu = false">Clientes</a></li>
+            <li :style="'visibility: ' + (!isAdmin ? 'initial' : 'hidden') + ';'"><a href="#servicos" v-on:click="showMenu = false">Serviços</a></li>
+            <li v-show="false">Sobre nós</li>
+            <li :style="'visibility: ' + (!isAdmin ? 'initial' : 'hidden') + ';'"><a href="#ksi-lab" v-on:click="showMenu = false">KSI LAB</a></li>
             <li>
                 <GoogleLogin :callback="handleLoginSuccess" v-if="$usuario.id == null">
                     <button class="btn btn-primary" >Entrar</button>
@@ -60,7 +58,8 @@ export default {
         return {
             showMenu: false,
             menuState: "",
-            loginContainer: false
+            loginContainer: false,
+            isAdmin: this.$route.fullPath.startsWith("/admin")
         }
     },
     watch: {
@@ -73,9 +72,26 @@ export default {
                 }
             },
             immediate: false
+        },
+        '$route.fullPath': {
+            handler(newPath, oldPath) {
+                if (newPath.startsWith('/admin')) {
+                    this.isAdmin = true;
+                } else {
+                    this.isAdmin = false;
+                }
+            },
+            immediate: true
         }
     },
     methods: {
+        goToHome: function () {
+            if (!this.isAdmin) {
+                document.getElementById("hero").scrollIntoView({ behavior: "smooth" });
+            } else {
+                this.$router.push("/");
+            }
+        },
         handleLoginSuccess(response) {
             let self = this;
 
@@ -174,12 +190,6 @@ a {
         background: none;
         color: var(--blue);
     }
-
-    & img {
-        width: 100px;
-        height: 32.61px;
-        cursor: pointer;
-    }
 }
 
 .logo {
@@ -194,6 +204,12 @@ a {
     right: 0;
     z-index: 1;
     margin: auto;
+
+    & img {
+        width: 100px;
+        height: 32.61px;
+        cursor: pointer;
+    }
 
     &::before {
         content: '';

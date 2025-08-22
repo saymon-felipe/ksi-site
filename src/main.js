@@ -12,11 +12,11 @@ import globalMixin from './mixins/global';
 import api from "./plugins/api.js";
 import vue3GoogleLogin from 'vue3-google-login';
 
-import { faBars, faAngleLeft, faAngleRight, faGlobe, faMobile, faQuestion, faMagnifyingGlass, faThumbsUp, faThumbsDown, faEye, faXmark, faPlay, faPause, faVolumeHigh, faVolumeLow, faVolumeOff, faVolumeXmark, faExpand, faCompress, faShare } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faAngleLeft, faAngleRight, faGlobe, faMobile, faQuestion, faMagnifyingGlass, faThumbsUp, faThumbsDown, faEye, faXmark, faPlay, faPause, faVolumeHigh, faVolumeLow, faVolumeOff, faVolumeXmark, faExpand, faCompress, faShare, faCircleArrowLeft, faCloudArrowUp, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { faLinkedin } from '@fortawesome/free-brands-svg-icons';
 
 /* Adiciona os ícones à biblioteca para que possam ser usados em qualquer lugar */
-library.add(faBars, faAngleLeft, faAngleRight, faGlobe, faMobile, faQuestion, faLinkedin, faMagnifyingGlass, faThumbsUp, faThumbsDown, faEye, faXmark, faPlay, faPause, faVolumeHigh, faVolumeLow, faVolumeOff, faVolumeXmark, faExpand, faCompress, faShare);
+library.add(faBars, faAngleLeft, faAngleRight, faGlobe, faMobile, faQuestion, faLinkedin, faMagnifyingGlass, faThumbsUp, faThumbsDown, faEye, faXmark, faPlay, faPause, faVolumeHigh, faVolumeLow, faVolumeOff, faVolumeXmark, faExpand, faCompress, faShare, faCircleArrowLeft, faCloudArrowUp, faUpload);
 
 const app = createApp(App).component('font-awesome-icon', FontAwesomeIcon);
 
