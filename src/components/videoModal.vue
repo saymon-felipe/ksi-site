@@ -11,7 +11,7 @@
                     <div class="video-loading">
                         <div ref="videoloadingAnimation" id="video-loading-animation"></div>
                     </div>
-                    <video ref="video" :src="video?.video" @timeupdate="updateProgress" @loadedmetadata="handleVideoLoaded(); setVideoDuration()"></video>
+                    <video ref="video" :src="video?.video" @timeupdate="updateProgress" v-on:click="videoState.playing = !videoState.playing" @loadeddata="handleVideoLoaded(); setVideoDuration(); videoState.playing = true"></video>
                     <div class="controls" ref="controls">
                         <div class="play-volume glass">
                             <button id="play-pause" class="hover">
@@ -63,10 +63,10 @@
                         <p class="secondary-font">{{ video.description }}</p>
                     </div>
                     <div class="video-statistics">
-                        <button class="like btn btn-primary">
+                        <button class="like btn btn-primary" v-on:click="like()" :class="interactStatus.liked ? 'hovered' : ''">
                             <font-awesome-icon icon="thumbs-up" />
                         </button>
-                        <button class="deslike btn">
+                        <button class="deslike btn" v-on:click="deslike()" :class="interactStatus.disliked ? 'hovered' : ''">
                             <font-awesome-icon icon="thumbs-down" />
                         </button>
                     </div>
@@ -74,17 +74,15 @@
                 <div class="video-comments-container">
                     <p class="primary-font">{{ comments?.length }} {{ comments?.length == 1 ? "comentário" : "comentários" }}</p>
                     <div class="form-group textarea">
-                        <textarea id="post-comment" placeholder="" v-model="commentText"></textarea>
+                        <textarea id="post-comment" placeholder="" v-model="commentText" :disabled="!$usuario.id"></textarea>
                         <div class="send-comment-container" v-on:click="sendComment()">
                             <font-awesome-icon icon="share" />
                         </div>
-                        <label for="post-comment">Escreva um comentário</label>
+                        <label for="post-comment">{{ $usuario.id ? "Escreva um comentário" : "É necessário estar logado para comentar" }}</label>
                     </div>
                     <div class="comments-list">
                         <div class="user" v-for="(user, index) in comments?.comments" :key="index">
-                            <div class="avatar primary-font" :style="'background: ' + user.background + '; color: ' + calculateContrastColor(user.background)">
-                                <h2>{{ getFirstLetter(user.userName) }}</h2>
-                            </div>
+                            <img :src="user.userImage" class="avatar">
                             <div class="user-comments-container secondary-font">
                                 <div class="user-comment glass" :style="'background: ' + comment.background" v-for="(comment, index2) in user.comments" :key="index2">
                                     <div class="comment-header">
@@ -102,15 +100,21 @@
             </div>
         </div>
     </div>
+    <AlertModal :isVisible="alertMessage != ''" :message="alertMessage" @close="alertMessage = ''"></AlertModal>
 </template>
 <script>
 import lottie from "lottie-web";
 import animationData from "../assets/animations/loading-video.json";
+import AlertModal from "./AlertModal.vue";
 
 export default {
     props: ["video"],
+    components: {
+        AlertModal
+    },
     data() {
         return {
+            alertMessage: "",
             showModalClass: "hide",
             videoState: {
                 playing: false,
@@ -123,14 +127,15 @@ export default {
             isDragging: false,
             hideControlsTimer: null,
             bufferProgress: 0,
-            comments: null,
-            commentText: ""
+            comments: [],
+            commentText: "",
+            interactStatus: {
+                liked: false,
+                disliked: false
+            }
         }
     },
     methods: {
-        getFirstLetter: function (string) {
-            return string && string.length > 0 ? string[0] : "";
-        },
         updateBufferProgress() {
             if (this.$refs.video && this.$refs.video.duration > 0) {
                 const buffered = this.$refs.video.buffered;
@@ -236,55 +241,83 @@ export default {
             document.removeEventListener('mouseup', this.handleMouseUp);
         },
         getVideoComments: function () {
-            let videoComments = {
-                length: 2,
-                comments: [
-                    {
-                        id: 0,
-                        userName: "C1berBolt1Ɛ",
-                        background: "#1E65C2",
-                        comments: [
-                            {
-                                date: "2025-08-09 17:28:39",
-                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
-                                background: "rgba(184, 193, 255, 0.3)"
-                            },
-                            {
-                                date: "2025-08-09 17:28:39",
-                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
-                                background: "rgba(184, 193, 255, 0.3)"
-                            },
-                            {
-                                date: "2025-08-09 17:28:39",
-                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
-                                background: "rgba(184, 193, 255, 0.3)"
-                            }
-                        ]
-                    },
-                    {
-                        id: 1,
-                        userName: "CristIn4S4fadinha",
-                        background: "#C21EB1",
-                        comments: [
-                            {
-                                date: "2025-08-09 17:28:39",
-                                comment: "Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.",
-                                background: "rgba(255, 161, 249, 0.3)"
-                            }
-                        ]
-                    }
-                ]
-            }
+            let self = this;
 
-            this.comments = videoComments;
+            this.api.get("utils/get-video-comments/" + self.video.id).then((response) => {
+                self.comments = response.data.returnObj;
+            }) 
         },
         sendComment: function () {
-            if (this.commentText.trim().length == 0) return;
+            if (this.commentText.trim().length == 0 || !this.$usuario.id) return;
 
-            console.log(this.commentText)
-            this.commentText = "";
+            let self = this;
 
+            this.api.post("utils/post-comment/" + self.video.id, { comment: this.commentText }).then((response) => {
+                self.commentText = "";
+                self.getVideoComments();
+                
+                setTimeout(() => {
+                    document.querySelector(".modal-body").scrollTop = 9999999;
+                }, 20)
+            }) 
+        },
+        like: function () {
+            if (!this.$usuario.id) {
+                this.alertMessage = "Você precisa estar logado para realizar esta ação";
+                return;
+            }
+
+            let self = this;
+
+            this.api.post("utils/video-like/" + self.video.id, { comment: this.commentText }).then(() => {
+                this.alertMessage = "Gostei registrado com sucesso";
+                this.getVideoInteractionStatus();
+            });
+        },
+        deslike: function () {
+            if (!this.$usuario.id) {
+                this.alertMessage = "Você precisa estar logado para realizar esta ação";
+                return;
+            }
+
+            let self = this;
+
+            this.api.post("utils/video-deslike/" + self.video.id, { comment: this.commentText }).then(() => {
+                this.alertMessage = "Não gostei registrado com sucesso";
+                this.getVideoInteractionStatus();
+            });
+        },
+        getVideoInteractionStatus: function () {
+            let self = this;
+
+            this.api.get("utils/video-interaction-status/" + self.video.id).then((response) => {
+                self.interactStatus = response.data.returnObj;
+            });
+        },
+        start: function () {
             this.getVideoComments();
+            this.getVideoInteractionStatus();
+
+            this.lottieAnimation = lottie.loadAnimation({
+                container: this.$refs.videoloadingAnimation,
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                animationData: animationData
+            });
+
+            this.$refs.video.addEventListener('ended', () => {
+                this.videoState.playing = false;
+                this.$refs.video.currentTime = 0;
+            });
+
+            this.$refs.video.addEventListener('progress', this.updateBufferProgress);
+
+            document.addEventListener('mouseup', this.handleMouseUp);
+
+            if (this.$refs.videoContainer) {
+                this.$refs.videoContainer.addEventListener('mousemove', this.handleMouseMoveOnVideo);
+            }
         }
     },
     watch: {
@@ -326,6 +359,8 @@ export default {
             let wrapper = document.querySelector(".modal-wrapper");
 
             if (this.video) {
+                this.start();
+
                 wrapper.style.display = "grid";
 
                 setTimeout(() => {
@@ -349,28 +384,7 @@ export default {
         }
     },
     mounted: function () {
-        this.getVideoComments();
-
-        this.lottieAnimation = lottie.loadAnimation({
-            container: this.$refs.videoloadingAnimation,
-            renderer: "svg",
-            loop: true,
-            autoplay: true,
-            animationData: animationData
-        });
-
-        this.$refs.video.addEventListener('ended', () => {
-            this.videoState.playing = false;
-            this.$refs.video.currentTime = 0;
-        });
-
-        this.$refs.video.addEventListener('progress', this.updateBufferProgress);
-
-        document.addEventListener('mouseup', this.handleMouseUp);
-
-        if (this.$refs.videoContainer) {
-            this.$refs.videoContainer.addEventListener('mousemove', this.handleMouseMoveOnVideo);
-        }
+        
     },
     beforeUnmount() {
         document.removeEventListener('mouseup', this.handleMouseUp);
@@ -452,6 +466,7 @@ export default {
     border-radius: 1.5rem;
     overflow-y: auto;
     overflow-x: hidden;
+    scroll-behavior: smooth;
     transition: opacity 0.4s ease-in-out;
 }
 
@@ -509,17 +524,22 @@ export default {
         font-size: 2rem;
         border: none;
         cursor: pointer;
-        padding: var(--space-3) var(--space-6);
-        min-width: 80px;
+        padding: var(--space-3) var(--space-4);
+        display: grid;
+        place-items: center;
         
         &:not(.no-margin):first-child {
             margin-left: var(--space-3);
         }
     }
+
+    & svg {
+        font-size: 1.4rem;
+    }
 }
 
 .video-track {
-    height: 53px;
+    height: 38.39px;
     width: 50%;
     display: grid;
     place-items: center;
@@ -713,6 +733,12 @@ export default {
 }
 </style>
 <style scoped>
+.user-informations {
+    text-align: left;
+    display: grid;
+    gap: var(--space-3);
+}
+
 .video-comments-container {
     padding: 0 var(--space-8);
     margin-top: var(--space-10);
@@ -760,6 +786,7 @@ export default {
 .user-comments-container {
     display: grid;
     gap: var(--space-6);
+    flex-grow: 1;
 }
 
 .user-comment {
@@ -774,11 +801,13 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .comment-body {
     text-align: left;
+    font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {

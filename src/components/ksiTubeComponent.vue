@@ -16,6 +16,7 @@
         </div>
         <div class="videos-catalog" v-scroll-reveal="{ delay: 500, origin: 'bottom', container: '.app-box-content' }">
             <p class="primary-font" v-if="filteredResults.length > 0">{{ filteredResults.length }} resultados</p>
+            <p class="primary-font" v-if="filteredResults.length == 0">Nenhum video encontrado</p>
             <div class="videos-container float">
                 <div class="video glass hover" v-for="(video, index) in filteredResults" :key="index" v-on:click="showVideo(video)">
                     <img :src="video.thumbnail" loading="lazy" :alt="video.title">
@@ -68,29 +69,15 @@ export default {
         },
         showVideo: function (video) {
             this.selectedVideo = video;
+            this.api.get("utils/view-video/" + this.selectedVideo.id);
         },
         getVideos: function () {
-            let videos = [
-                {
-                    id: 0,
-                    thumbnail: "https://kineticsolutions.s3.sa-east-1.amazonaws.com/test-thumb.png",
-                    video: "https://kineticsolutions.s3.sa-east-1.amazonaws.com/Bruxa_Salva_com_Feiti%C3%A7o_Anti_Bug.mp4",
-                    description: "Acompanhe o lançamento do primeiro satélite civil da KSI chamado KSI-SAT-1.",
-                    title: "Lançamento KSI-SAT-1",
-                    date: "2025-08-09 17:28:39",
-                    statistics: {
-                        views: 133,
-                        likes: 15
-                    },
-                    user: {
-                        image: "https://cademint.s3.sa-east-1.amazonaws.com/2025-08-03T20_25_48.570Zimagem_2025-08-03_172541563.png",
-                        name: "Dr. Zeno"
-                    }
-                }
-            ]
+            let self = this;
 
-            this.videos = videos;
-            this.filteredResults = videos;
+            this.api.get("utils/get-videos").then((response) => {
+                self.videos = response.data.returnObj;
+                self.filteredResults = response.data.returnObj;
+            })            
         }
     },
     mounted: function () {
@@ -160,8 +147,9 @@ export default {
     & img {
         width: 100%;
         min-height: 173.25px;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
         background-color: white;
-        object-fit: contain;
         border-radius: var(--radius-lg);
     }
 }

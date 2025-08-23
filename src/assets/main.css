@@ -79,7 +79,7 @@ a {
   color: var(--black);
   user-select: none;
 
-  &:hover {
+  &:hover, &.hovered {
     color: #73c2ff;
     background: white !important;
     transform: translateY(-5px);
@@ -90,7 +90,7 @@ a {
   background: var(--black);
   color: var(--white);
 
-  &:hover {
+  &:hover, &.hovered {
     transform: translateY(-5px);
     background: var(--black) !important;
   }
