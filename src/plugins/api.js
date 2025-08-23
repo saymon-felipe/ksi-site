@@ -3,7 +3,7 @@ import axios from 'axios';
 let url_api;
 
 const dev_environment = "http://localhost:3000/"; // Ambiente de desenvolvimento.
-const prod_environment = ""; // Ambiente de teste.
+const prod_environment = "https://core-ksi-0965169e8f49.herokuapp.com/"; // Ambiente de teste.
 
 // Detecta ambiente automaticamente
 let ambient = (window.location.hostname.includes("localhost") || window.location.hostname.includes("192.168")) ? 0 : 1;
