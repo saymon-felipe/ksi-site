@@ -1,10 +1,51 @@
 <template>
     <div class="glass container">
-        <div class="header" v-on:click="reset()">
+        <div class="header" v-on:click="reset()" v-if="sendVideo">
             <font-awesome-icon icon="circle-arrow-left" />
-            <h3 class="secondary-font">Enviar video</h3>
         </div>
-        <div class="send-video" v-if="!videoPreviewUrl">
+        <div class="video-list" v-if="!sendVideo">
+            <div class="header">
+                <h3 class="secondary-font">Conteúdo do laboratório</h3>
+                <button type="button" class="btn btn-primary" v-on:click="handleGoToSend()">Enviar video</button>
+            </div>
+            <table v-if="videos.length == 0">
+                Nenhum conteúdo
+            </table>
+            <table v-else>
+                <thead>
+                    <tr>
+                        <th>Video</th>
+                        <th>Data publicação</th>
+                        <th class="text-right">Visualizações</th>
+                        <th class="text-right">Comentários</th>
+                        <th class="text-center">Métricas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(video, index) in videos" :key="index" class="hover" style="cursor: pointer;" v-on:click="selectVideo(video)">
+                        <td>
+                            <div>
+                                <img :src="video.thumbnail">
+                                <div>
+                                    <h3 class="primary-font">{{ video.title }}</h3>
+                                    <span class="secondary-font">{{ video.description }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span>{{ formatDate(video.date) }}</span></td>
+                        <td class="text-right">{{ video.statistics.views }}</td>
+                        <td class="text-right">{{ video.statistics.comments }}</td>
+                        <td>
+                            <div class="text-center metrics">
+                                <span>Gostei: {{ video.statistics.likes }}</span>
+                                <span>Não gostei: {{ video.statistics.dislikes }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="send-video" v-if="!videoPreviewUrl && sendVideo">
             <div class="send-button-container">
                 <div class="send-button" v-on:click="triggerUploadInput()">
                     <font-awesome-icon icon="cloud-arrow-up" />
@@ -13,7 +54,7 @@
                 <input type="file" style="display: none;" id="videoInput" @change="handleSendVideoToUpload" accept="video/mp4">
             </div>
         </div>
-        <div class="upload" v-else>
+        <div class="upload" v-if="videoPreviewUrl && sendVideo">
             <div class="video-data">
                 <form @submit.prevent="upload()">
                     <h3 class="primary-font">Detalhes</h3>
@@ -43,11 +84,16 @@
                 </form>
                 <video :src="videoPreviewUrl" controls></video>
             </div>
-            <button type="button" class="btn btn-primary" v-on:click="handleSubmitUpload()">Confirmar envio</button>
+            <div class="buttons">
+                <button type="button" class="btn btn-primary" v-on:click="excludeVideo()" v-if="edit">Excluir video</button>
+                <button type="button" class="btn btn-primary" v-on:click="handleSubmitUpload()">{{ edit ? "Confirmar edição" : "Confirmar envio" }}</button>
+            </div>
         </div>
     </div>
 </template>
 <script>
+import moment from 'moment';
+import 'moment/dist/locale/pt-br';
 
 export default {
     data() {
@@ -57,10 +103,39 @@ export default {
             videoDescription: "",
             thumbnailSrc: null,
             videoFile: null,
-            thumbnailFile: null
+            thumbnailFile: null,
+            videos: [],
+            sendVideo: false,
+            edit: false,
+            videoId: null
         }
     },
     methods: {
+        handleGoToSend: function () {
+            this.sendVideo = true;
+        },
+        excludeVideo: async function () {
+            let choice = await confirm("Tem certeza que deseja excluir?");
+
+            if (!choice) return;
+
+            const response = await this.api.delete("utils/videos/" + this.videoId);
+            
+            // Trata a resposta de sucesso
+            console.log("Video deletado:", response.data);
+            await alert("Vídeo excluído!");
+            this.reset();
+        },
+        selectVideo: function (video) {
+            this.videoId = video.id;
+            this.videoPreviewUrl = video.video;
+            this.videoTitle = video.title;
+            this.videoDescription = video.description;
+            this.thumbnailSrc = video.thumbnail;
+            this.videoPreviewUrl = video.video;
+            this.sendVideo = true;
+            this.edit = true;
+        },
         reset: function () {
             this.videoPreviewUrl = null;
             this.videoTitle = "";
@@ -68,6 +143,13 @@ export default {
             this.thumbnailSrc = null;
             this.videoFile = null;
             this.thumbnailFile = null;
+            this.sendVideo = false;
+            this.edit = false;
+
+            this.getVideos();
+        },
+        formatDate: function (date) {
+            return moment(date).format('DD [de] MMMM [de] YYYY');
         },
         handleSendVideoThumbnail: function (event) {
             const file = event.target.files[0];
@@ -99,7 +181,38 @@ export default {
                 this.videoFile = null;
             }
         },
+        async editVideo() {
+            const formData = new FormData();
+            
+            // Adiciona todos os dados ao FormData
+            formData.append("thumbnail", this.thumbnailFile);
+            formData.append("title", this.videoTitle);
+            formData.append("description", this.videoDescription);
+
+            try {
+                // Envia a requisição
+                const response = await this.api.patch("utils/videos/" + this.videoId, formData);
+                
+                // Trata a resposta de sucesso
+                console.log("Edição bem-sucedida:", response.data);
+                alert("Vídeo salvo com sucesso!");
+                this.reset(); // Limpa o formulário após o sucesso
+            } catch (error) {
+                // Trata os erros
+                console.error("Erro no salvamento:", error.response.data);
+                alert("Ocorreu um erro ao salvar o vídeo.");
+            }
+        },
         async upload() {
+            let choice = await confirm("Tem certeza que deseja prosseguir?");
+
+            if (!choice) return;
+
+            if (this.edit) {
+                this.editVideo();
+                return;
+            }
+
             // Verifica se todos os campos estão preenchidos
             if (!this.videoTitle || !this.videoDescription || !this.thumbnailFile || !this.videoFile) {
                 alert("Por favor, preencha todos os campos e selecione os arquivos.");
@@ -131,6 +244,14 @@ export default {
                 console.error("Erro no upload:", error.response.data);
                 alert("Ocorreu um erro ao enviar o vídeo.");
             }
+        },
+        getVideos: function () {
+            let self = this;
+
+            this.api.get("utils/get-videos").then((response) => {
+                self.videos = response.data.returnObj;
+                self.filteredResults = response.data.returnObj;
+            })            
         }
     },
     beforeUnmount() {
@@ -140,6 +261,11 @@ export default {
         if (this.thumbnailSrc) {
             URL.revokeObjectURL(this.thumbnailSrc);
         }
+    },
+    mounted: function () {
+        moment.locale("pt-br");
+
+        this.getVideos();
     }
 }
 </script>
@@ -246,5 +372,61 @@ export default {
     width: fit-content;
     cursor: pointer;
     z-index: 2;
+}
+
+.buttons {
+    display: flex;
+    gap: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+</style>
+<style scoped>
+.video-list {
+    display: grid;
+    gap: var(--space-10);
+
+    & table {
+        & th {
+            font-weight: bold;
+            text-align: left;
+            padding-bottom: var(--space-6);
+        }
+
+        & td > div {
+            display: flex;
+            align-items: center;
+            gap: var(--space-6);
+
+            & .primary-font {
+                margin-top: 0;
+            }
+        }
+    }
+
+    & img {
+        width: 100px;
+        border-radius: 10px;
+    }
+}
+
+.metrics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
 }
 </style>

@@ -65,7 +65,12 @@ export default {
     },
     methods: {
         search: function () {
-
+            this.filteredResults = this.videos.filter((video) => {
+                return (
+                    video.title.includes(this.searchString.toLowerCase()) ||
+                    video.description.includes(this.searchString.toLowerCase())
+                )
+            })
         },
         showVideo: function (video) {
             this.selectedVideo = video;
