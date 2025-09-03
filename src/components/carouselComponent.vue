@@ -217,6 +217,7 @@ export default {
 
     & .imagem {
         width: 100%;
+        max-width: 1110px;
     }
 
     & .icone {
