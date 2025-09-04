@@ -234,7 +234,7 @@ export default {
       this.time += 0.005;
       this.frameCounter++;
 
-      if (this.frameCounter % 3 === 0) {
+      if (this.frameCounter % 2 === 0) {
         if (deformableSphere) {
           deformableSphere.geometry.computeVertexNormals();
         }
