@@ -9,7 +9,7 @@
                     <input type="text" id="search" placeholder="" v-model="searchString" maxlength="5000"></input>
                     <label for="search">Pesquisar</label>
                 </div>
-                <button type="button" class="btn btn-primary" style="height: 60px;" v-on:click="search()">
+                <button type="button" class="btn btn-primary" aria-label="Search" style="height: 60px;" v-on:click="search()">
                     <font-awesome-icon icon="magnifying-glass" />
                 </button>
             </div>
