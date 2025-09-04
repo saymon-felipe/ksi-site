@@ -9,7 +9,7 @@
                 class="hover"
             >
                 <div class="glass float icone">
-                    <img :src="cliente.icone" loading="lazy" />
+                    <img :src="cliente.icone" loading="lazy" :alt="cliente.nome" />
                 </div>
                 <div class="image-container">
                     <img :src="cliente.imagem" class="imagem"  loading="lazy" :alt="cliente.nome" />
@@ -27,10 +27,10 @@
         </div>
 
         <div class="responsive-navigation-buttons">
-            <button class="glass button" v-on:click="prevSlide()">
+            <button class="glass button" aria-label="Prev" v-on:click="prevSlide()">
                 <font-awesome-icon icon="angle-left" />
             </button>
-            <button class="glass button" v-on:click="nextSlide()">
+            <button class="glass button" aria-label="Next" v-on:click="nextSlide()">
                 <font-awesome-icon icon="angle-right" />
             </button>
         </div>

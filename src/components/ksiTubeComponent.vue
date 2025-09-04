@@ -86,7 +86,9 @@ export default {
         }
     },
     mounted: function () {
-        this.getVideos();
+        setTimeout(() => {
+            this.getVideos();
+        }, 500)
     }
 }
 </script>

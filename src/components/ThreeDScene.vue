@@ -6,7 +6,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { gsap } from 'gsap';
-import { text } from '@fortawesome/fontawesome-svg-core';
 
 // --- Funções de Simplex Noise ---
 // Mantidas como estão, pois são utilitárias e funcionais.
@@ -48,7 +47,8 @@ export default {
   name: 'ThreeDScene',
   data() {
     return {
-      time: 0, // Usado para animação baseada em tempo
+      time: 0,
+      frameCounter: 0
     };
   },
   props: {
@@ -308,6 +308,13 @@ export default {
     animate() {
       animationFrameId = requestAnimationFrame(this.animate);
       this.time += 0.005; // Incrementa o tempo para animações baseadas em tempo
+      this.frameCounter++;
+
+      if (this.frameCounter % 3 === 0) {
+        if (deformableSphere) {
+          deformableSphere.geometry.computeVertexNormals();
+        }
+      }
 
       // Animação da esfera deformável
       if (deformableSphere && mousePlane) {
@@ -381,7 +388,6 @@ export default {
 
         // Marca que as posições dos vértices foram atualizadas para o Three.js
         deformableSphere.geometry.attributes.position.needsUpdate = true;
-        deformableSphere.geometry.computeVertexNormals(); // Recalcula as normais para iluminação correta
       }
 
       // Renderiza a cena com a câmera

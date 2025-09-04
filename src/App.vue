@@ -11,7 +11,7 @@
     <span class="primary-font signature" v-scroll-reveal="{ delay: 500, origin: 'bottom' }">
         <span>© {{ year }} KSI. todos os direitos reservados.</span>
 
-        <a href="https://www.linkedin.com/company/ksikineticsolutions" target="_blank">
+        <a href="https://www.linkedin.com/company/ksikineticsolutions" target="_blank" aria-hidden="true">
             <font-awesome-icon title="Linkedin: KSI - Kinetic Solutions" :icon="['fab', 'linkedin']" />
         </a>
     </span>

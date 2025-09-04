@@ -82,7 +82,7 @@
                     </div>
                     <div class="comments-list">
                         <div class="user" v-for="(user, index) in comments?.comments" :key="index">
-                            <img :src="user.userImage" class="avatar">
+                            <img :src="user.userImage" class="avatar" :alt="user.userName">
                             <div class="user-comments-container secondary-font">
                                 <div class="user-comment glass" :style="'background: ' + comment.background" v-for="(comment, index2) in user.comments" :key="index2">
                                     <div class="comment-header">

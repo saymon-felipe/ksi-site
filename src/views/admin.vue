@@ -25,7 +25,7 @@
                     <tr v-for="(video, index) in videos" :key="index" class="hover" style="cursor: pointer;" v-on:click="selectVideo(video)">
                         <td>
                             <div>
-                                <img :src="video.thumbnail">
+                                <img :src="video.thumbnail" alt="Thumbnail">
                                 <div>
                                     <h3 class="primary-font">{{ video.title }}</h3>
                                     <span class="secondary-font">{{ video.description }}</span>
@@ -77,7 +77,7 @@
                             <div class="remove-button hover glass">
                                 <font-awesome-icon icon="xmark" v-on:click="thumbnailSrc = null" />
                             </div>
-                            <img :src="thumbnailSrc">
+                            <img :src="thumbnailSrc" alt="Preview thumbnail">
                         </div>
                     </div>
                     <button type="submit" style="display: none;" id="submit-form"></button>             
