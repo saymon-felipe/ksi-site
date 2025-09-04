@@ -121,7 +121,7 @@ export default {
   justify-content: space-between;
   gap: var(--space-3);
   width: calc(100vw - 2.4rem);
-  z-index: 10;
+  z-index: 12;
 
   & svg {
     font-size: 1.3rem;
