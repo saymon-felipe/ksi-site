@@ -16,6 +16,10 @@ export default defineConfig({
         short_name: 'KSI',
         description: 'Agência de tecnologia e soluções digitais.',
         theme_color: '#17517E',
+        display: 'standalone',
+        background_color: '#ffffff',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'icone-192x192.png',
@@ -28,6 +32,9 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      devOptions: {
+        enabled: false // Mude para true para testar o SW em dev
       }
     })
   ],

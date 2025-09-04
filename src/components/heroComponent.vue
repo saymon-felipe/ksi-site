@@ -1,6 +1,6 @@
 <template>
     <section id="hero" class="hero-content">
-        <h1 v-scroll-reveal="{ delay: 500, origin: 'bottom', container: '.app-box-content' }">
+        <h1 v-scroll-reveal="{ delay: 500, origin: 'bottom', container: '.app-box-content' }" class="prevent-flicker">
             <span class="secondary-font" style="transition: all 0.4s ease-in-out;">FORÇA DA INOVAÇÃO. IDEIAS DO FUTURO.</span>
             
             <Transition name="fade-slide" mode="out-in">
@@ -13,12 +13,12 @@
             </Transition>
         </h1>
         
-        <div class="hero-buttons" v-scroll-reveal="{ delay: 500, origin: 'top', container: '.app-box-content' }">
+        <div class="hero-buttons prevent-flicker" v-scroll-reveal="{ delay: 500, origin: 'top', container: '.app-box-content' }">
             <a href="#servicos" class="btn btn-primary bounce-repeat">ORÇAMENTO GRATUITO</a>
             <a href="#clientes" class="btn">VER CLIENTES</a>
         </div>
         
-        <div class="customers-container float" v-scroll-reveal="{ delay: 500, origin: 'left', container: '.app-box-content' }">
+        <div class="customers-container float prevent-flicker" v-scroll-reveal="{ delay: 500, origin: 'left', container: '.app-box-content' }">
             <div class="images-group">
                 <img src="../assets/img/clientes/solutto.png" loading="lazy" class="avatar" title="Solutto" alt="Solutto" />
                 <img src="../assets/img/clientes/mokaly.png" loading="lazy" class="avatar" title="Mokaly" alt="Mokaly" />

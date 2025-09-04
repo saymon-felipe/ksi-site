@@ -31,7 +31,8 @@ export default {
     return {
       spherePosition: {},
       text: {},
-      year: new Date().getFullYear()
+      year: new Date().getFullYear(),
+      initial: true
     }
   },
   mounted: function () {
@@ -39,6 +40,11 @@ export default {
       let containerHeight = Math.floor(document.querySelector("#hero").getBoundingClientRect().height) + 21;
       let scrollTop = Math.floor(e.target.scrollTop);
       
+      if (this.initial) {
+        this.initial = false;
+        return;
+      }
+
       if (scrollTop < (containerHeight / 2)) { //primeira sessão
           this.text = { refresh: true };
           this.spherePosition = { x: 0, y: -1, z: 1, scale: 1 };

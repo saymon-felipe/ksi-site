@@ -28,6 +28,12 @@ export default {
                     icone: "https://rabsystems-storage.s3.sa-east-1.amazonaws.com/agendaspro-logo.png"
                 },
                 {
+                    imagem: "https://kineticsolutions.s3.sa-east-1.amazonaws.com/comprarapida-app_otimizada.webp",
+                    nome: "Compra Rápida",
+                    link: "",
+                    icone: "https://kineticsolutions.s3.sa-east-1.amazonaws.com/comprarapida-logo.webp"
+                },
+                {
                     imagem: "https://kineticsolutions.s3.sa-east-1.amazonaws.com/portal-aluno-thumb_otimizada.webp",
                     nome: "Solutto - Educacional",
                     icone: "https://rabsystems-storage.s3.sa-east-1.amazonaws.com/solutto-logo.png",

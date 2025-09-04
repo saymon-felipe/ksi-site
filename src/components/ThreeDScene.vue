@@ -70,9 +70,11 @@ export default {
     }
   },
   mounted() {
-    this.initThree();
-    window.addEventListener('resize', this.onWindowResize, false);
-    window.addEventListener('mousemove', this.onMouseMove, false);
+    this.$nextTick(() => {
+      this.initThree();
+      window.addEventListener('resize', this.onWindowResize, false);
+      window.addEventListener('mousemove', this.onMouseMove, false);
+    })
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.onWindowResize, false);

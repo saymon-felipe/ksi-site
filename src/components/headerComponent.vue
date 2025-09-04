@@ -104,9 +104,7 @@ export default {
 
             this.api.get("users").then((results) => {
                 Object.assign(self.$usuario, results.data.returnObj);
-            }).catch(() => {
-                console.info("Usuário não logado");
-            })
+            }).catch()
         },
         logout: function () {
             let self = this;

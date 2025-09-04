@@ -31,7 +31,7 @@
   color: var(--black);
 }
 
-.scroll-reveal {
+.prevent-flicker {
   visibility: hidden;
 }
 
